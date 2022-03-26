@@ -729,11 +729,12 @@ int OnInit()
          Comment(message);
          //---
          ObjectsDeleteAll(0, OBJPREFIX, -1, -1);
-         return(INIT_FAILED);
         }
       StringSplit(TradeSymbols, StringGetCharacter(";", 0), Symbols);
       int size = ArraySize(Symbols);
       ArrayResize(trades, size, size);
+      ArrayResize(tools, size, size);
+
       ArrayResize(Positions, size, size);
       ArrayResize(SellPositions, size, size);
       ArrayResize(BuyPositions, size, size);
@@ -753,8 +754,8 @@ int OnInit()
            {
             Print(Symbols[i]+" added to Market watch");
            }
-        
-        
+
+
 
          trades[i] = new CExecute(Symbols[i], magic_Number);
          BuyPositions[i] = new CPosition(Symbols[i], magic_Number, GROUP_POSITIONS_BUYS);
@@ -763,6 +764,7 @@ int OnInit()
          Pendings[i]=new COrder(Symbols[i],magic_Number,GROUP_ORDERS_ALL);
          BuyPendings[i]=new COrder(Symbols[i],magic_Number,GROUP_ORDERS_BUY_STOP);
          SellPendings[i]=new COrder(Symbols[i],magic_Number,GROUP_ORDERS_SELL_STOP);
+         tools[i] = new CUtilities(Symbols[i]);
          MasterSignal[i]=0;
          Signal2[i]=0;
          Signal3[i]=0;
@@ -862,8 +864,8 @@ int OnInit()
       ObjectsDeleteAll(0, OBJPREFIX, -1, -1);
 
 //--- Init Speed Prices
-   for(int i = ArraySize(aSymbols)-1; i >= 0; i--)
-      GlobalVariableSet(OBJPREFIX+Prefix+aSymbols[i]+Suffix+" - Price", (SymbolInfoDouble(Prefix+aSymbols[i]+Suffix, SYMBOL_ASK)+SymbolInfoDouble(Prefix+aSymbols[i]+Suffix, SYMBOL_BID))/2);
+   for(int i = ArraySize(Symbols)-1; i >= 0; i--)
+      GlobalVariableSet(OBJPREFIX+Prefix+Symbols[i]+Suffix+" - Price", (SymbolInfoDouble(Prefix+Symbols[i]+Suffix, SYMBOL_ASK)+SymbolInfoDouble(Prefix+Symbols[i]+Suffix, SYMBOL_BID))/2);
 
 //--- Animation
    if(LastReason == 0 && ShowDashboard)
@@ -938,262 +940,271 @@ void OnDeinit(const int reason)
 void OnTick()
   {
 //---
-ClosingFilter();
-bool TradeAllow=TradeDays();
-if (TradeAllow){
-   int size = ArraySize(Symbols);
-// loop on all symbols
-   for(int i = 0; i < size; i++)
+   Telegram();
+
+   ClosingFilter();
+   bool TradeAllow=TradeDays();
+   if(TradeAllow)
      {
-       // Delete Pending Orders After  Bars
-      if(delete_Pending&&Bars_to_Delete_Pending>0)
-        DeletePeblndingWithCandle();
-        
-      int mainSignal = 0;
-      bool change=false;
-      bool exitchange=false;
-      if(indikator1 != off)
+      int size = ArraySize(Symbols);
+      // loop on all symbols
+      for(int i = 0; i < size; i++)
         {
-        int m=GetIndicatorsSignal(indikator1, timeframe1, comment1, shift1, Symbols[i]);
-        if(m!=MasterSignal[i]&&m!=0){
-         MasterSignal[i] = m;
-         change=true;
-         }
-        }
-      if(indikator2 != off)
-        {
-        int s2=GetIndicatorsSignal(indikator2, timeframe2, comment2, shift2, Symbols[i]);
-        if(s2!=Signal2[i]&&s2!=0){
-         Signal2[i] = s2;
-         change=true;
-         }
-        }
-      if(indikator3 != off)
-        {
-        int s3=GetIndicatorsSignal(indikator3, timeframe3, comment3, shift3, Symbols[i]);
-        if(s3!=Signal3[i]&&s3!=0){
-         Signal3[i] =s3;
-         change=true;
-         }
-        }
-      if(indikator4 != off)
-        {
-        int s4=GetIndicatorsSignal(indikator4, timeframe4, comment4, shift4, Symbols[i]);
-        if(s4!=Signal4[i]&&s4!=0){
-         Signal4[i] = s4;
-         change=true;
-         }
-        }
-      if(indikator1x != off)
-        {
-        int x1=GetIndicatorsSignal(indikator1x, timeframe1x, comment, 0, Symbols[i]);
-        if(x1!=0&&x1!=exit1[i]){
-         exit1[i] = x1;
-         exitchange=true;
-         }
-        }
-      if(indikator2x != off)
-        {
-        int x2=GetIndicatorsSignal(indikator2x, timeframe2x, comment4, 0, Symbols[i]);
-        if(x2!=0&&x2!=exit2[i]){
-         exit2[i] =x2 ;
-         exitchange=true;
-         }
-        }
-      // ======================================== Single Strategy ===================================
-      if(Strategy == single&&change)
-        {
-         // =====================================Buy =====================================
-         if(Trade_Direction == buyx || Trade_Direction == bothx)
+         // Delete Pending Orders After  Bars
+         if(delete_Pending&&Bars_to_Delete_Pending>0)
+            DeletePeblndingWithCandle(Pendings[i]);
+
+         int mainSignal = 0;
+         bool change=false;
+         bool exitchange=false;
+         if(indikator1 != off)
            {
-            if(MasterSignal[i] > 0)
+            int m=GetIndicatorsSignal(indikator1, timeframe1, comment1, shift1, Symbols[i]);
+            if(m!=MasterSignal[i]&&m!=0)
               {
-               string Cmnt = commentselect == Auto?comment: comment1;
-               Buy(i, Cmnt);
-               mainSignal = 1;
-               change=false;
-         
+               MasterSignal[i] = m;
+               change=true;
               }
-            if(Signal2[i] > 0)
+           }
+         if(indikator2 != off)
+           {
+            int s2=GetIndicatorsSignal(indikator2, timeframe2, comment2, shift2, Symbols[i]);
+            if(s2!=Signal2[i]&&s2!=0)
               {
-               string Cmnt = commentselect == Auto?comment: comment2;
-               Buy(i, Cmnt);
-               mainSignal = 1;
-               change=false;
+               Signal2[i] = s2;
+               change=true;
               }
-            if(Signal3[i] > 0)
+           }
+         if(indikator3 != off)
+           {
+            int s3=GetIndicatorsSignal(indikator3, timeframe3, comment3, shift3, Symbols[i]);
+            if(s3!=Signal3[i]&&s3!=0)
               {
-               string Cmnt = commentselect == Auto?comment: comment3;
-               Buy(i, Cmnt);
-               mainSignal = 1;
-               change=false;
+               Signal3[i] =s3;
+               change=true;
               }
-            if(Signal4[i] > 0)
+           }
+         if(indikator4 != off)
+           {
+            int s4=GetIndicatorsSignal(indikator4, timeframe4, comment4, shift4, Symbols[i]);
+            if(s4!=Signal4[i]&&s4!=0)
               {
-               string Cmnt = commentselect == Auto?comment: comment4;
-               Buy(i, Cmnt);
-               mainSignal = 1;
-               change=false;
+               Signal4[i] = s4;
+               change=true;
+              }
+           }
+         if(indikator1x != off)
+           {
+            int x1=GetIndicatorsSignal(indikator1x, timeframe1x, comment, 0, Symbols[i]);
+            if(x1!=0&&x1!=exit1[i])
+              {
+               exit1[i] = x1;
+               exitchange=true;
+              }
+           }
+         if(indikator2x != off)
+           {
+            int x2=GetIndicatorsSignal(indikator2x, timeframe2x, comment4, 0, Symbols[i]);
+            if(x2!=0&&x2!=exit2[i])
+              {
+               exit2[i] =x2 ;
+               exitchange=true;
+              }
+           }
+         // ======================================== Single Strategy ===================================
+         if(Strategy == single&&change)
+           {
+            // =====================================Buy =====================================
+            if(Trade_Direction == buyx || Trade_Direction == bothx)
+              {
+               if(MasterSignal[i] > 0)
+                 {
+                  string Cmnt = commentselect == Auto?comment: comment1;
+                  Buy(i, Cmnt);
+                  mainSignal = 1;
+                  change=false;
+
+                 }
+               if(Signal2[i] > 0)
+                 {
+                  string Cmnt = commentselect == Auto?comment: comment2;
+                  Buy(i, Cmnt);
+                  mainSignal = 1;
+                  change=false;
+                 }
+               if(Signal3[i] > 0)
+                 {
+                  string Cmnt = commentselect == Auto?comment: comment3;
+                  Buy(i, Cmnt);
+                  mainSignal = 1;
+                  change=false;
+                 }
+               if(Signal4[i] > 0)
+                 {
+                  string Cmnt = commentselect == Auto?comment: comment4;
+                  Buy(i, Cmnt);
+                  mainSignal = 1;
+                  change=false;
+                 }
+              }
+
+            // ========================================Sell =================================
+            if(Trade_Direction == sellx || Trade_Direction == bothx)
+              {
+               if(MasterSignal[i] < 0)
+                 {
+                  string Cmnt = commentselect == Auto?comment: comment1;
+                  Sell(i, Cmnt);
+                  mainSignal = -1;
+                  change=false;
+                 }
+               if(Signal2[i] < 0)
+                 {
+                  string Cmnt = commentselect == Auto?comment: comment2;
+                  Sell(i, Cmnt);
+                  mainSignal = -1;
+                  change=false;
+                 }
+               if(Signal3[i] < 0)
+                 {
+                  string Cmnt = commentselect == Auto?comment: comment3;
+                  Sell(i, Cmnt);
+                  mainSignal = -1;
+                  change=false;
+                 }
+               if(Signal4[i] < 0)
+                 {
+                  string Cmnt = commentselect == Auto?comment: comment4;
+                  Sell(i, Cmnt);
+                  mainSignal = -1;
+                  change=false;
+                 }
               }
            }
 
-         // ========================================Sell =================================
-         if(Trade_Direction == sellx || Trade_Direction == bothx)
+         // ======================================== Seperate Strategy ===================================
+         if(Strategy == seperate&&change)
            {
-            if(MasterSignal[i] < 0)
+            // =====================================Buy =====================================
+            if(Trade_Direction == buyx || Trade_Direction == bothx)
               {
-               string Cmnt = commentselect == Auto?comment: comment1;
-               Sell(i, Cmnt);
-               mainSignal = -1;
-               change=false;
+
+               if(Signal2[i] > 0 && MasterSignal[i] > 0)
+                 {
+                  string Cmnt = commentselect == Auto?comment: comment2;
+                  Buy(i, Cmnt);
+                  mainSignal = 1;
+                  change=false;
+                 }
+               if(Signal3[i] > 0 && MasterSignal[i] > 0)
+                 {
+                  string Cmnt = commentselect == Auto?comment: comment3;
+                  Buy(i, Cmnt);
+                  mainSignal = 1;
+                  change=false;
+                 }
+               if(Signal4[i] > 0 && MasterSignal[i] > 0)
+                 {
+                  string Cmnt = commentselect == Auto?comment: comment4;
+                  Buy(i, Cmnt);
+                  mainSignal = 1;
+                  change=false;
+                 }
               }
-            if(Signal2[i] < 0)
+
+            // ========================================Sell =================================
+            if(Trade_Direction == sellx || Trade_Direction == bothx)
               {
-               string Cmnt = commentselect == Auto?comment: comment2;
-               Sell(i, Cmnt);
-               mainSignal = -1;
-               change=false;
-              }
-            if(Signal3[i] < 0)
-              {
-               string Cmnt = commentselect == Auto?comment: comment3;
-               Sell(i, Cmnt);
-               mainSignal = -1;
-               change=false;
-              }
-            if(Signal4[i] < 0)
-              {
-               string Cmnt = commentselect == Auto?comment: comment4;
-               Sell(i, Cmnt);
-               mainSignal = -1;
-               change=false;
+
+               if(Signal2[i] < 0 && MasterSignal[i] < 0)
+                 {
+                  string Cmnt = commentselect == Auto?comment: comment2;
+                  Sell(i, Cmnt);
+                  mainSignal = -1;
+                  change=false;
+                 }
+               if(Signal3[i] < 0 && MasterSignal[i] < 0)
+                 {
+                  string Cmnt = commentselect == Auto?comment: comment3;
+                  Sell(i, Cmnt);
+                  mainSignal = -1;
+                  change=false;
+                 }
+               if(Signal4[i] < 0 && MasterSignal[i] < 0)
+                 {
+                  string Cmnt = commentselect == Auto?comment: comment4;
+                  Sell(i, Cmnt);
+                  mainSignal = -1;
+                  change=false;
+                 }
               }
            }
+         // ======================================== Join Strategy ===================================
+         if(Strategy == join&&change)
+           {
+            // =====================================Buy =====================================
+            if(Trade_Direction == buyx || Trade_Direction == bothx)
+              {
+
+               if(Signal2[i] > 0 && Signal3[i] > 0 && Signal4[i] > 0 && MasterSignal[i] > 0)
+                 {
+                  string Cmnt = commentselect == Auto?comment: comment2;
+                  Buy(i, Cmnt);
+                  change=false;
+                  mainSignal = 1;
+                 }
+
+
+              }
+
+            // ========================================Sell =================================
+            if(Trade_Direction == sellx || Trade_Direction == bothx)
+              {
+
+               if(Signal2[i] < 0 && Signal3[i] < 0 && Signal4[i] < 0 && MasterSignal[i] < 0)
+                 {
+                  string Cmnt = commentselect == Auto?comment: comment2;
+                  Sell(i, Cmnt);
+                  mainSignal = -1;
+                  change=false;
+                 }
+
+              }
+           }
+         if(closetype == opposite&&exitchange)
+           {
+            if(close_Strategy == singleClose)
+              {
+               if(exit1[i] > 0 && mainSignal < 0)
+                 {
+                  BuyPositions[i].GroupCloseAll(30);
+                  BuyPendings[i].GroupCloseAll(30);
+                 }
+               if(exit1[i] < 0 && mainSignal > 0)
+                 {
+                  SellPositions[i].GroupCloseAll(30);
+                  SellPendings[i].GroupCloseAll(30);
+                 }
+              }
+            if(close_Strategy == joinClose)
+              {
+               if(exit1[i] > 0 && exit2[i] > 0 && mainSignal < 0)
+                 {
+                  BuyPositions[i].GroupCloseAll(30);
+                  BuyPendings[i].GroupCloseAll(30);
+                 }
+               if(exit1[i] < 0 && exit2[i] < 0 && mainSignal > 0)
+                 {
+                  SellPositions[i].GroupCloseAll(30);
+                  SellPendings[i].GroupCloseAll(30);
+                 }
+              }
+           }
+
+
         }
-
-      // ======================================== Seperate Strategy ===================================
-      if(Strategy == seperate&&change)
-        {
-         // =====================================Buy =====================================
-         if(Trade_Direction == buyx || Trade_Direction == bothx)
-           {
-
-            if(Signal2[i] > 0 && MasterSignal[i] > 0)
-              {
-               string Cmnt = commentselect == Auto?comment: comment2;
-               Buy(i, Cmnt);
-               mainSignal = 1;
-               change=false;
-              }
-            if(Signal3[i] > 0 && MasterSignal[i] > 0)
-              {
-               string Cmnt = commentselect == Auto?comment: comment3;
-               Buy(i, Cmnt);
-               mainSignal = 1;
-               change=false;
-              }
-            if(Signal4[i] > 0 && MasterSignal[i] > 0)
-              {
-               string Cmnt = commentselect == Auto?comment: comment4;
-               Buy(i, Cmnt);
-               mainSignal = 1;
-               change=false;
-              }
-           }
-
-         // ========================================Sell =================================
-         if(Trade_Direction == sellx || Trade_Direction == bothx)
-           {
-
-            if(Signal2[i] < 0 && MasterSignal[i] < 0)
-              {
-               string Cmnt = commentselect == Auto?comment: comment2;
-               Sell(i, Cmnt);
-               mainSignal = -1;
-               change=false;
-              }
-            if(Signal3[i] < 0 && MasterSignal[i] < 0)
-              {
-               string Cmnt = commentselect == Auto?comment: comment3;
-               Sell(i, Cmnt);
-               mainSignal = -1;
-               change=false;
-              }
-            if(Signal4[i] < 0 && MasterSignal[i] < 0)
-              {
-               string Cmnt = commentselect == Auto?comment: comment4;
-               Sell(i, Cmnt);
-               mainSignal = -1;
-               change=false;
-              }
-           }
-        }
-      // ======================================== Join Strategy ===================================
-      if(Strategy == join&&change)
-        {
-         // =====================================Buy =====================================
-         if(Trade_Direction == buyx || Trade_Direction == bothx)
-           {
-
-            if(Signal2[i] > 0 && Signal3[i] > 0 && Signal4[i] > 0 && MasterSignal[i] > 0)
-              {
-               string Cmnt = commentselect == Auto?comment: comment2;
-               Buy(i, Cmnt);
-               change=false;
-               mainSignal = 1;
-              }
-
-
-           }
-
-         // ========================================Sell =================================
-         if(Trade_Direction == sellx || Trade_Direction == bothx)
-           {
-
-            if(Signal2[i] < 0 && Signal3[i] < 0 && Signal4[i] < 0 && MasterSignal[i] < 0)
-              {
-               string Cmnt = commentselect == Auto?comment: comment2;
-               Sell(i, Cmnt);
-               mainSignal = -1;
-               change=false;
-              }
-
-           }
-        }
-      if(closetype == opposite&&exitchange)
-        {
-         if(close_Strategy == singleClose)
-           {
-            if(exit1[i] > 0 && mainSignal < 0)
-              {
-               BuyPositions[i].GroupCloseAll(30);
-               BuyPendings[i].GroupCloseAll(30);
-              }
-            if(exit1[i] < 0 && mainSignal > 0)
-              {
-               SellPositions[i].GroupCloseAll(30);
-               SellPendings[i].GroupCloseAll(30);
-              }
-           }
-         if(close_Strategy == joinClose)
-           {
-            if(exit1[i] > 0 && exit2[i] > 0 && mainSignal < 0)
-              {
-               BuyPositions[i].GroupCloseAll(30);
-               BuyPendings[i].GroupCloseAll(30);
-              }
-            if(exit1[i] < 0 && exit2[i] < 0 && mainSignal > 0)
-              {
-               SellPositions[i].GroupCloseAll(30);
-               SellPendings[i].GroupCloseAll(30);
-              }
-           }
-        }
-
 
      }
-  
-}
 //---
    if(ShowDashboard)
      {
@@ -1417,23 +1428,26 @@ double CalcLot(string symbol)
 //+------------------------------------------------------------------+
 void Buy(int i, string Cmnt)
   {
-   double volume = CalcLot(Symbols[i]);
-// =====================================Buy =====================================
-   if(Execution_Mode == instan)
+   if(usemode==Auto)
      {
-      trades[i].Position(TYPE_POSITION_BUY, volume, StopLoss, TakeProfit, SLTP_PIPS, 30, Cmnt);
-     }
-   if(Execution_Mode == limit)
-     {
-      double openPrice = tools[i].Bid()-orderdistance*tools[i].Pip();
-      trades[i].Order(TYPE_ORDER_BUYLIMIT, volume, openPrice, StopLoss, TakeProfit, SLTP_PIPS, 0, 30, Cmnt);
-     }
-   if(Execution_Mode == stop)
-     {
-      double openPrice = tools[i].Ask()+orderdistance*tools[i].Pip();
-      trades[i].Order(TYPE_ORDER_BUYSTOP, volume, openPrice, StopLoss, TakeProfit, SLTP_PIPS, 0, 30, Cmnt);
-     }
+      double volume = CalcLot(Symbols[i]);
+      // =====================================Buy =====================================
+      if(Execution_Mode == instan)
+        {
+         trades[i].Position(TYPE_POSITION_BUY, volume, StopLoss, TakeProfit, SLTP_PIPS, 30, Cmnt);
+        }
+      if(Execution_Mode == limit)
+        {
+         double openPrice = tools[i].Bid()-orderdistance*tools[i].Pip();
+         trades[i].Order(TYPE_ORDER_BUYLIMIT, volume, openPrice, StopLoss, TakeProfit, SLTP_PIPS, 0, 30, Cmnt);
+        }
+      if(Execution_Mode == stop)
+        {
+         double openPrice = tools[i].Ask()+orderdistance*tools[i].Pip();
+         trades[i].Order(TYPE_ORDER_BUYSTOP, volume, openPrice, StopLoss, TakeProfit, SLTP_PIPS, 0, 30, Cmnt);
+        }
 
+     }
   }
 //+------------------------------------------------------------------+
 
@@ -1442,121 +1456,150 @@ void Buy(int i, string Cmnt)
 //+------------------------------------------------------------------+
 void Sell(int i, string Cmnt)
   {
-   double volume = CalcLot(Symbols[i]);
+   if(usemode==Auto)
+     {
+      double volume = CalcLot(Symbols[i]);
 
-   if(Execution_Mode == instan)
-     {
-      trades[i].Position(TYPE_POSITION_SELL, volume, StopLoss, TakeProfit, SLTP_PIPS, 30, Cmnt);
-     }
-   if(Execution_Mode == limit)
-     {
-      double openPrice = tools[i].Ask()+orderdistance*tools[i].Pip();
-      trades[i].Order(TYPE_ORDER_SELLLIMIT, volume, openPrice, StopLoss, TakeProfit, SLTP_PIPS, 0, 30, Cmnt);
-     }
-   if(Execution_Mode == stop)
-     {
-      double openPrice = tools[i].Bid()-orderdistance*tools[i].Pip();
-      trades[i].Order(TYPE_ORDER_SELLSTOP, volume, openPrice, StopLoss, TakeProfit, SLTP_PIPS, 0, 30, Cmnt);
+      if(Execution_Mode == instan)
+        {
+         trades[i].Position(TYPE_POSITION_SELL, volume, StopLoss, TakeProfit, SLTP_PIPS, 30, Cmnt);
+        }
+      if(Execution_Mode == limit)
+        {
+         double openPrice = tools[i].Ask()+orderdistance*tools[i].Pip();
+         trades[i].Order(TYPE_ORDER_SELLLIMIT, volume, openPrice, StopLoss, TakeProfit, SLTP_PIPS, 0, 30, Cmnt);
+        }
+      if(Execution_Mode == stop)
+        {
+         double openPrice = tools[i].Bid()-orderdistance*tools[i].Pip();
+         trades[i].Order(TYPE_ORDER_SELLSTOP, volume, openPrice, StopLoss, TakeProfit, SLTP_PIPS, 0, 30, Cmnt);
+        }
      }
   }
-  
-  void ClosingFilter(){
-    int size=ArraySize(Symbols);
-    double Profit=0;
-    int Tb=0,Ts=0;
-    double ProfitInPips=0;
-    for(int x=0;x<size;x++){
-	       Profit=Profit+Positions[i].GroupTotalProfit();
-	       Ts=Ts+SellPositions[i].GroupTotal();
-	       Tb=Tb+BuyPositions[i].GroupTotal();
-	       ProfitInPips=ProfitInPips+profitPipsPerSymbol(Positions[i],tools[i]);
-    }
-    
-    if(Profit_Type==InDollarsProfit){
-      if(Profit>ProfitValue){
-        closAll();
-      }
-    }
-    if(Profit_Type==InPercentProfit){
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void ClosingFilter()
+  {
+   int size=ArraySize(Symbols);
+   double Profit=0;
+   int Tb=0,Ts=0;
+   double ProfitInPips=0;
+   for(int x=0; x<size; x++)
+     {
+      Profit=Profit+Positions[x].GroupTotalProfit();
+      Ts=Ts+SellPositions[x].GroupTotal();
+      Tb=Tb+BuyPositions[x].GroupTotal();
+      ProfitInPips=ProfitInPips+profitPipsPerSymbol(Positions[x],tools[x]);
+     }
+
+   if(Profit_Type==InDollarsProfit)
+     {
+      if(Profit>ProfitValue)
+        {
+         closAll();
+        }
+     }
+   if(Profit_Type==InPercentProfit)
+     {
       double pp=Profit/AccountBalance();
       if(ProfitValue<pp)
          closAll();
-    }
-    if(Profit_Type==InPipsProfit&&ProfitValue!=0){
+     }
+   if(Profit_Type==InPipsProfit&&ProfitValue!=0)
+     {
       if(ProfitValue<ProfitInPips)
-      closAll();
-    }
-    if(LossType==InDollarsLoss&&LossValue!=0){
+         closAll();
+     }
+   if(LossType==InDollarsLoss&&LossValue!=0)
+     {
       if(Profit<0&&LossValue<MathAbs(Profit))
-        closAll();
-    }
-    if(LossType==InPercentLoss&&LossValue!=0){
-      if(Profit<0){
-      double lp=MathAbs(Profit)/AccountBalance();
-      if(LossValue<lp)
-          closAll();
-      }
-    }
-    if(LossType==InPipsLoss&&LossValue!=0){
-      if(ProfitInPips<0&&LossValue<MathAbs(ProfitInPips)){
-        closAll();
-      }
-    }
+         closAll();
+     }
+   if(LossType==InPercentLoss&&LossValue!=0)
+     {
+      if(Profit<0)
+        {
+         double lp=MathAbs(Profit)/AccountBalance();
+         if(LossValue<lp)
+            closAll();
+        }
+     }
+   if(LossType==InPipsLoss&&LossValue!=0)
+     {
+      if(ProfitInPips<0&&LossValue<MathAbs(ProfitInPips))
+        {
+         closAll();
+        }
+     }
   }
 //+------------------------------------------------------------------+
-void closAll(){
-  int size=ArraySize(Symbols);
-  for(int i=0;i<size;x++){
-    Positions[i].GroupCloseAll(30);
-  }
-}
-
-double profitPipsPerSymbol(CPosition & pos,CUtilities & tool){
-  int size = pos.GroupTotal();
-  double pips=0
-  for(int x=0;x<size;x++){
-  double PriceOpen= pos[x].GetPriceOpen(); 
-  pips=pips+(tool[x].Bid()-PriceOpen);
-	}
-	pips=pips/tool.Pips();
-	return Pips;
-}
-void DeletePeblndingWithCandle(COrder & pending){
-  int size=pending.GroupTotal();
-  for(int i=0;i<size;i++){
-    datetime timeOpen=pending[i].GetTimeSetup();
-    string symb=pending[i].GetSymbol();
-    datetime timetoDelete=iTime(symb,0,Bars_to_Delete_Pending);
-    if(timeOpen<=timetoDelete){
-      pending[i].Close(30);
-    } 
-	}
-  
-}
-
-void Telegram(){
-     if( && cc0!=""&& time0[i]!=iTime(_Symbol,AlertInterval,0))
+void closAll()
+  {
+   int size=ArraySize(Symbols);
+   for(int i=0; i<size; i++)
      {
-      time0[i]=iTime(_Symbol,AlertInterval,0);
+      Positions[i].GroupCloseAll(30);
+     }
+  }
 
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+double profitPipsPerSymbol(CPosition & pos,CUtilities & tool)
+  {
+   int size = pos.GroupTotal();
+   double pips=0;
+   for(int x=0; x<size; x++)
+     {
+      double PriceOpen= pos[x].GetPriceOpen();
+      pips=pips+(tool.Bid()-PriceOpen);
+     }
+   pips=pips/tool.Pip();
+   return pips;
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void DeletePeblndingWithCandle(COrder & pending)
+  {
+   int size=pending.GroupTotal();
+   for(int i=0; i<size; i++)
+     {
+      datetime timeOpen=pending[i].GetTimeSetUp();
+      string symb=pending[i].GetSymbol();
+      datetime timetoDelete=iTime(symb,0,Bars_to_Delete_Pending);
+      if(timeOpen<=timetoDelete)
+        {
+         pending[i].Close(30);
+        }
+     }
+
+  }
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void Telegram()
+  {
+   if(useTel&& cc0!="")
+     {
       if(getme_result!=0)
         {
          Print("Error : ",(getme_result));
         }
-      //--- popup alerts
-      if(useAlerts)
-         Alert(cc0);
+
       //--- reading messages
       bot.GetUpdates();
 
       //--- processing messages
       bot.ProcessMessages(cc0);
      }
-}
+  }
 //+------------------------------------------------------------------+
 bool TradeDays()
   {
-   if(SET_TRADING_DAYS == no)
+   if(SET_TRADING_DAYS == false)
       return(true);
 
    bool ret=false;
@@ -1791,12 +1834,12 @@ void CreateSymbGUI(int i, int Y)
 //---
 
 //---
-   LabelCreate(0,OBJPREFIX+_Symb+"Master",0,_x1+Dpi(100),Y,CORNER_LEFT_UPPER,IntegerToString(MasterSignal[i]),sFontType,FONTSIZE,COLOR_FONT,0,ANCHOR_LEFT,false,false,true,0,_Symb);
-   LabelCreate(0,OBJPREFIX+_Symb+"Indicator 1",0,_x1+Dpi(200),Y,CORNER_LEFT_UPPER,IntegerToString(Signal2[i]),sFontType,FONTSIZE,COLOR_FONT,0,ANCHOR_LEFT,false,false,true,0,_Symb);
-   LabelCreate(0,OBJPREFIX+_Symb+"Indicator 2",0,_x1+Dpi(300),Y,CORNER_LEFT_UPPER,IntegerToString(Signal3[i]),sFontType,FONTSIZE,COLOR_FONT,0,ANCHOR_LEFT,false,false,true,0,_Symb);
-   LabelCreate(0,OBJPREFIX+_Symb+"Indicator 3",0,_x1+Dpi(400),Y,CORNER_LEFT_UPPER,IntegerToString(Signal4[i]),sFontType,FONTSIZE,COLOR_FONT,0,ANCHOR_LEFT,false,false,true,0,_Symb);
-   LabelCreate(0,OBJPREFIX+_Symb+"Exit1",0,_x1+Dpi(500),Y,CORNER_LEFT_UPPER,IntegerToString(exit1[i]),sFontType,FONTSIZE,COLOR_FONT,0,ANCHOR_LEFT,false,false,true,0,_Symb);
-   LabelCreate(0,OBJPREFIX+_Symb+"Exit2",0,_x1+Dpi(600),Y,CORNER_LEFT_UPPER,IntegerToString(exit2[i]),sFontType,FONTSIZE,COLOR_FONT,0,ANCHOR_LEFT,false,false,true,0,_Symb);
+   LabelCreate(0,OBJPREFIX+_Symb+"Master1",0,_x1+Dpi(100),Y,CORNER_LEFT_UPPER,MasterSignal[i]>0?"5":MasterSignal[i]<0?"6":"4","Webdings",15,MasterSignal[i]>0?clrLimeGreen:MasterSignal[i]<0?clrRed:clrYellow,0,ANCHOR_LEFT,false,false,true,0,_Symb);
+   LabelCreate(0,OBJPREFIX+_Symb+"Indicator 1",0,_x1+Dpi(200),Y,CORNER_LEFT_UPPER,Signal2[i]>0?"5":Signal2[i]<0?"6":"4","Webdings",15,Signal2[i]>0?clrLimeGreen:Signal2[i]<0?clrRed:clrYellow,0,ANCHOR_LEFT,false,false,true,0,_Symb);
+   LabelCreate(0,OBJPREFIX+_Symb+"Indicator 2",0,_x1+Dpi(300),Y,CORNER_LEFT_UPPER,Signal3[i]>0?"5":Signal3[i]<0?"6":"4","Webdings",15,Signal3[i]>0?clrLimeGreen:Signal3[i]<0?clrRed:clrYellow,0,ANCHOR_LEFT,false,false,true,0,_Symb);
+   LabelCreate(0,OBJPREFIX+_Symb+"Indicator 3",0,_x1+Dpi(400),Y,CORNER_LEFT_UPPER,Signal4[i]>0?"5":Signal4[i]<0?"6":"4","Webdings",15,Signal4[i]>0?clrLimeGreen:Signal4[i]<0?clrRed:clrYellow,0,ANCHOR_LEFT,false,false,true,0,_Symb);
+   LabelCreate(0,OBJPREFIX+_Symb+"Exit1",0,_x1+Dpi(500),Y,CORNER_LEFT_UPPER,exit1[i]>0?"5":exit1[i]<0?"6":"4","Webdings",15,exit1[i]>0?clrLimeGreen:exit1[i]<0?clrRed:clrYellow,0,ANCHOR_LEFT,false,false,true,0,_Symb);
+   LabelCreate(0,OBJPREFIX+_Symb+"Exit2",0,_x1+Dpi(600),Y,CORNER_LEFT_UPPER,exit2[i]>0?"5":exit2[i]<0?"6":"4","Webdings",15,exit2[i]>0?clrLimeGreen:exit2[i]<0?clrRed:clrYellow,0,ANCHOR_LEFT,false,false,true,0,_Symb);
 //---
 
 //---
@@ -2793,3 +2836,4 @@ void _PlaySound(const string FileName)
       PlaySound(FileName);
 //---
   }
+//+------------------------------------------------------------------+
