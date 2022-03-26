@@ -72,16 +72,16 @@ enum ENUM_UNIT
 
 enum profittype
   {
-   InCurrencyProfit = 0,
-// In Currency
-   InPercentProfit = 1 // In Percent
+   InDollarsProfit = 0, //In Dollars
+   InPercentProfit = 1, // In Percent
+   InPipsProfit         =2
   };
 
 enum losstype
   {
-   InCurrencyLoss = 0,
-// In Currency
-   InPercentLoss = 1 // In Percent
+   InDollarsLoss = 0,// In sollars
+   InPercentLoss = 1, // In Percent
+   InPipsLoss       =2,
   };
 
 enum signaltype
@@ -315,9 +315,10 @@ input bool BarBaru = false; //Open New Bar Indicator
 //|                                                                  |
 //+------------------------------------------------------------------+
 input int orderexp = 3; //Pending order Experation (inBars)
-
+input profittype Profit_Type= InDollarsProfit;
 input double ProfitValue = 30.0; //Maximum Profit in %
-
+input losstype LossType = InDollarsLoss; // Loss Type
+input double LossValue = 70; // Max Loss Limit (%)
 
 input bool fibotp = false; // Use Fibo TP
 input bool showfibo = TRUE; // Show SnR Fibo Line
@@ -347,8 +348,7 @@ input bool DebugBreakEven = true; // Break Even Infos in Journal
 input bool DebugUnit = true; // SL TP Trail BE Units Infos in Journal (in tester)
 input bool DebugPartialClose = true; // Partial close Infos in Journal
 
-input losstype LossType = InPercentLoss; // Loss Type
-input double LossValue = 70; // Max Loss Limit (%)
+
 // Telegram
 input string h3 = "===================telegram=================";
 input bool useTel = true; // Use Telegram Alerts
@@ -550,6 +550,7 @@ string aSymbols[];
 string UsedSymbols[];
 //---
 string MB_CAPTION = ExpertName+" v"+Version+" | "+Copyright;
+
 //---
 // Arrays
 string Symbols[];
@@ -937,6 +938,7 @@ void OnDeinit(const int reason)
 void OnTick()
   {
 //---
+ClosingFilter();
 bool TradeAllow=TradeDays();
 if (TradeAllow){
    int size = ArraySize(Symbols);
@@ -1457,8 +1459,68 @@ void Sell(int i, string Cmnt)
       trades[i].Order(TYPE_ORDER_SELLSTOP, volume, openPrice, StopLoss, TakeProfit, SLTP_PIPS, 0, 30, Cmnt);
      }
   }
+  
+  void ClosingFilter(){
+    int size=ArraySize(Symbols);
+    double Profit=0;
+    int Tb=0,Ts=0;
+    double ProfitInPips=0;
+    for(int x=0;x<size;x++){
+	       Profit=Profit+Positions[i].GroupTotalProfit();
+	       Ts=Ts+SellPositions[i].GroupTotal();
+	       Tb=Tb+BuyPositions[i].GroupTotal();
+	       ProfitInPips=ProfitInPips+profitPipsPerSymbol(Positions[i],tools[i]);
+    }
+    
+    if(Profit_Type==InDollarsProfit){
+      if(Profit>ProfitValue){
+        closAll();
+      }
+    }
+    if(Profit_Type==InPercentProfit){
+      double pp=Profit/AccountBalance();
+      if(ProfitValue<pp)
+         closAll();
+    }
+    if(Profit_Type==InPipsProfit&&ProfitValue!=0){
+      if(ProfitValue<ProfitInPips)
+      closAll();
+    }
+    if(LossType==InDollarsLoss&&LossValue!=0){
+      if(Profit<0&&LossValue<MathAbs(Profit))
+        closAll();
+    }
+    if(LossType==InPercentLoss&&LossValue!=0){
+      if(Profit<0){
+      double lp=MathAbs(Profit)/AccountBalance();
+      if(LossValue<lp)
+          closAll();
+      }
+    }
+    if(LossType==InPipsLoss&&LossValue!=0){
+      if(ProfitInPips<0&&LossValue<MathAbs(ProfitInPips)){
+        closAll();
+      }
+    }
+  }
 //+------------------------------------------------------------------+
+void closAll(){
+  int size=ArraySize(Symbols);
+  for(int i=0;i<size;x++){
+    Positions[i].GroupCloseAll(30);
+  }
+}
 
+double profitPipsPerSymbol(CPosition & pos,CUtilities & tool){
+  int size = pos.GroupTotal();
+  double pips=0
+  for(int x=0;x<size;x++){
+  double PriceOpen= pos[x].GetPriceOpen(); 
+  pips=pips+(tool[x].Bid()-PriceOpen);
+	}
+	pips=pips/tool.Pips();
+	return Pips;
+}
 void DeletePeblndingWithCandle(COrder & pending){
   int size=pending.GroupTotal();
   for(int i=0;i<size;i++){
@@ -1472,6 +1534,25 @@ void DeletePeblndingWithCandle(COrder & pending){
   
 }
 
+void Telegram(){
+     if( && cc0!=""&& time0[i]!=iTime(_Symbol,AlertInterval,0))
+     {
+      time0[i]=iTime(_Symbol,AlertInterval,0);
+
+      if(getme_result!=0)
+        {
+         Print("Error : ",(getme_result));
+        }
+      //--- popup alerts
+      if(useAlerts)
+         Alert(cc0);
+      //--- reading messages
+      bot.GetUpdates();
+
+      //--- processing messages
+      bot.ProcessMessages(cc0);
+     }
+}
 //+------------------------------------------------------------------+
 bool TradeDays()
   {
