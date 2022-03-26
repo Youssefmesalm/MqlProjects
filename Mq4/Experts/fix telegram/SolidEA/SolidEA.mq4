@@ -1080,7 +1080,76 @@ void OnTick() {
 //+------------------------------------------------------------------+
 void OnTimer() {
   //---
+ if(ShowDashboard)
+     {
+      //---
+      ObjectsCreateAll();
+      //---
+      for(int i=0; i<ArraySize(aSymbols); i++)
+        {
+         ObjectsUpdateAll(Prefix+aSymbols[i]+Suffix);
+         GetSetInputs(Prefix+aSymbols[i]+Suffix);
+        }
+      //---
+      GetSetInputsA();
 
+      //--- MoveWindow
+      if(LastReason==REASON_CHARTCHANGE)
+        {
+         Chart_XSize=(int)ChartGetInteger(0,CHART_WIDTH_IN_PIXELS);
+         Chart_YSize=(int)ChartGetInteger(0,CHART_HEIGHT_IN_PIXELS);
+         //---
+         ChartX=Chart_XSize;
+         ChartY=Chart_YSize;
+         //---
+         LastReason=0;
+        }
+      //---
+      if(ChartX!=Chart_XSize || ChartY!=Chart_YSize)
+        {
+         ObjectsDeleteAll(0,OBJPREFIX,-1,-1);
+         //---
+         ObjectsCreateAll();
+         //---
+         ChartX=Chart_XSize;
+         ChartY=Chart_YSize;
+        }
+      //---
+      Chart_XSize=(int)ChartGetInteger(0,CHART_WIDTH_IN_PIXELS);
+      Chart_YSize=(int)ChartGetInteger(0,CHART_HEIGHT_IN_PIXELS);
+
+      //--- Connected
+      if(TerminalInfoInteger(TERMINAL_CONNECTED))
+        {
+         //---
+         if(ObjectGetString(0,OBJPREFIX+"CONNECTION",OBJPROP_TEXT)!="ü")//GetObject
+            ObjectSetString(0,OBJPREFIX+"CONNECTION",OBJPROP_TEXT,"ü");//SetObject
+         //---
+         if(ObjectGetString(0,OBJPREFIX+"CONNECTION",OBJPROP_TOOLTIP)!="Connected")//GetObject
+           {
+            double Ping=TerminalInfoInteger(TERMINAL_PING_LAST);//SetPingToMs
+            ObjectSetString(0,OBJPREFIX+"CONNECTION",OBJPROP_TOOLTIP,"Connected..."+"\nPing: "+DoubleToString(Ping/1000,2)+" ms");//SetObject
+           }
+        }
+      //--- Disconnected
+      else
+        {
+         //---
+         if(ObjectGetString(0,OBJPREFIX+"CONNECTION",OBJPROP_TEXT)!="ñ")//GetObject
+            ObjectSetString(0,OBJPREFIX+"CONNECTION",OBJPROP_TEXT,"ñ");//SetObject
+         //---
+         if(ObjectGetString(0,OBJPREFIX+"CONNECTION",OBJPROP_TOOLTIP)!="No connection!")//GetObject
+            ObjectSetString(0,OBJPREFIX+"CONNECTION",OBJPROP_TOOLTIP,"No connection!");//SetObject
+        }
+      //--- ResetStatus
+      if(stauts_time<TimeLocal()-1)
+         ResetStatus();
+      //---
+      Comment("");
+      ChartRedraw();
+     }
+   else
+      CreateMinWindow();
 }
 //+------------------------------------------------------------------+
 
@@ -1350,12 +1419,12 @@ void ObjectsCreateAll() {
 
   LabelCreate(0, OBJPREFIX+"BALANCE«", 0, _x1+Dpi(300), _y1+Dpi(8), CORNER_LEFT_UPPER, Balance(), sFontType, 8, C'59, 41, 40', 0, ANCHOR_CENTER, false, false, true, 0, "Balance is :"+Balance());
   LabelCreate(0, OBJPREFIX+"Pairs", 0, _x1+Dpi(10), _y1+Dpi(30), CORNER_LEFT_UPPER, "Pairs", "Arial Black", 12, COLOR_FONT, 0, ANCHOR_LEFT, false, false, true, 0, "\n");
-  LabelCreate(0, OBJPREFIX+"Master", 0, _x1+Dpi(100), _y1+Dpi(30), CORNER_LEFT_UPPER, "1 MA", "Arial Black", 10, COLOR_FONT, 0, ANCHOR_LEFT, false, false, true, 0, "\n");
-  LabelCreate(0, OBJPREFIX+"Indicator 1", 0, _x1+Dpi(150), _y1+Dpi(30), CORNER_LEFT_UPPER, "2 MA", "Arial Black", 10, COLOR_FONT, 0, ANCHOR_LEFT, false, false, true, 0, "\n");
-  LabelCreate(0, OBJPREFIX+"Indicator 2", 0, _x1+Dpi(200), _y1+Dpi(30), CORNER_LEFT_UPPER, "STO-RSI", "Arial Black", 10, COLOR_FONT, 0, ANCHOR_LEFT, false, false, true, 0, "\n");
-  LabelCreate(0, OBJPREFIX+"Indicator 3", 0, _x1+Dpi(300), _y1+Dpi(30), CORNER_LEFT_UPPER, "STO", "Arial Black", 10, COLOR_FONT, 0, ANCHOR_LEFT, false, false, true, 0, "\n");
-  LabelCreate(0, OBJPREFIX+"Exit 1", 0, _x1+Dpi(350), _y1+Dpi(30), CORNER_LEFT_UPPER, "MACD", "Arial Black", 10, COLOR_FONT, 0, ANCHOR_LEFT, false, false, true, 0, "\n");
-  LabelCreate(0, OBJPREFIX+"Exit 2", 0, _x1+Dpi(400), _y1+Dpi(30), CORNER_LEFT_UPPER, "ADX", "Arial Black", 10, COLOR_FONT, 0, ANCHOR_LEFT, false, false, true, 0, "\n");
+  LabelCreate(0, OBJPREFIX+"Master", 0, _x1+Dpi(100), _y1+Dpi(30), CORNER_LEFT_UPPER, "Master", "Arial Black", 10, COLOR_FONT, 0, ANCHOR_LEFT, false, false, true, 0, "\n");
+  LabelCreate(0, OBJPREFIX+"Indicator1", 0, _x1+Dpi(150), _y1+Dpi(30), CORNER_LEFT_UPPER, "Slave 1", "Arial Black", 10, COLOR_FONT, 0, ANCHOR_LEFT, false, false, true, 0, "\n");
+  LabelCreate(0, OBJPREFIX+"Indicator 2", 0, _x1+Dpi(200), _y1+Dpi(30), CORNER_LEFT_UPPER, "Slave 2", "Arial Black", 10, COLOR_FONT, 0, ANCHOR_LEFT, false, false, true, 0, "\n");
+  LabelCreate(0, OBJPREFIX+"Indicator 3", 0, _x1+Dpi(300), _y1+Dpi(30), CORNER_LEFT_UPPER, "Slave 3", "Arial Black", 10, COLOR_FONT, 0, ANCHOR_LEFT, false, false, true, 0, "\n");
+  LabelCreate(0, OBJPREFIX+"Exit 1", 0, _x1+Dpi(350), _y1+Dpi(30), CORNER_LEFT_UPPER, "Exit 1", "Arial Black", 10, COLOR_FONT, 0, ANCHOR_LEFT, false, false, true, 0, "\n");
+  LabelCreate(0, OBJPREFIX+"Exit 2", 0, _x1+Dpi(400), _y1+Dpi(30), CORNER_LEFT_UPPER, "Exit 2", "Arial Black", 10, COLOR_FONT, 0, ANCHOR_LEFT, false, false, true, 0, "\n");
 
   //--- SymbolsGUI
   int fr_y = _y1+Dpi(60);
@@ -1392,7 +1461,12 @@ void CreateSymbGUI(int i, int Y) {
 //---
   
 //---
-   LabelCreate(0,OBJPREFIX+_Symb+"Master",0,_x1+Dpi(100),Y,CORNER_LEFT_UPPER,,sFontType,FONTSIZE,COLOR_FONT,0,ANCHOR_LEFT,false,false,true,0,_Symb);
+   LabelCreate(0,OBJPREFIX+_Symb+"Master",0,_x1+Dpi(100),Y,CORNER_LEFT_UPPER,IntegerToString(MasterSignal[i]),sFontType,FONTSIZE,COLOR_FONT,0,ANCHOR_LEFT,false,false,true,0,_Symb);
+   LabelCreate(0,OBJPREFIX+_Symb+"Indicator 1",0,_x1+Dpi(150),Y,CORNER_LEFT_UPPER,IntegerToString(Signal2[i]),sFontType,FONTSIZE,COLOR_FONT,0,ANCHOR_LEFT,false,false,true,0,_Symb);
+   LabelCreate(0,OBJPREFIX+_Symb+"Indicator 2",0,_x1+Dpi(200),Y,CORNER_LEFT_UPPER,IntegerToString(Signal3[i]),sFontType,FONTSIZE,COLOR_FONT,0,ANCHOR_LEFT,false,false,true,0,_Symb);
+   LabelCreate(0,OBJPREFIX+_Symb+"Indicator 3",0,_x1+Dpi(300),Y,CORNER_LEFT_UPPER,IntegerToString(Signal4[i]),sFontType,FONTSIZE,COLOR_FONT,0,ANCHOR_LEFT,false,false,true,0,_Symb);
+   LabelCreate(0,OBJPREFIX+_Symb+"Exit 1",0,_x1+Dpi(300),Y,CORNER_LEFT_UPPER,IntegerToString(exit1[i]),sFontType,FONTSIZE,COLOR_FONT,0,ANCHOR_LEFT,false,false,true,0,_Symb);
+   LabelCreate(0,OBJPREFIX+_Symb+"Exit 2",0,_x1+Dpi(300),Y,CORNER_LEFT_UPPER,IntegerToString(exit2[i]),sFontType,FONTSIZE,COLOR_FONT,0,ANCHOR_LEFT,false,false,true,0,_Symb);
 //---
 
   //---
