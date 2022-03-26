@@ -229,6 +229,7 @@ input bool Show_Trading_Session = false;
 input execute Execution_Mode = instan; //Order Execution Mode
 input int orderdistance = 30; //Order Distance
 input bool delete_Pending = false; //Delete Pending Order
+input int Bars_to_Delete_Pending=0; // Number of Bars to delete Pending
 input trademode commentselect = Auto; // Comment
 input string comment = "YM"; // Auto Comment
 input string Prefix = ""; //Symbol Prefix
@@ -936,11 +937,16 @@ void OnDeinit(const int reason)
 void OnTick()
   {
 //---
+bool TradeAllow=TradeDays();
+if (TradeAllow){
    int size = ArraySize(Symbols);
 // loop on all symbols
    for(int i = 0; i < size; i++)
      {
-
+       // Delete Pending Orders After  Bars
+      if(delete_Pending&&Bars_to_Delete_Pending>0)
+        DeletePeblndingWithCandle();
+        
       int mainSignal = 0;
       bool change=false;
       bool exitchange=false;
@@ -1184,6 +1190,8 @@ void OnTick()
 
 
      }
+  
+}
 //---
    if(ShowDashboard)
      {
@@ -1451,9 +1459,116 @@ void Sell(int i, string Cmnt)
   }
 //+------------------------------------------------------------------+
 
+void DeletePeblndingWithCandle(COrder & pending){
+  int size=pending.GroupTotal();
+  for(int i=0;i<size;i++){
+    datetime timeOpen=pending[i].GetTimeSetup();
+    string symb=pending[i].GetSymbol();
+    datetime timetoDelete=iTime(symb,0,Bars_to_Delete_Pending);
+    if(timeOpen<=timetoDelete){
+      pending[i].Close(30);
+    } 
+	}
+  
+}
 
+//+------------------------------------------------------------------+
+bool TradeDays()
+  {
+   if(SET_TRADING_DAYS == no)
+      return(true);
 
+   bool ret=false;
+   int today=DayOfWeek();
 
+   if(EA_START_DAY<EA_STOP_DAY)
+     {
+      if(today>EA_START_DAY && today<EA_STOP_DAY)
+         return(true);
+      else
+         if(today==EA_START_DAY)
+           {
+            if(TimeCurrent()>=datetime(StringToTime(EA_START_TIME)))
+               return(true);
+            else
+               return(false);
+           }
+         else
+            if(today==EA_STOP_DAY)
+              {
+               if(TimeCurrent()<datetime(StringToTime(EA_STOP_TIME)))
+                  return(true);
+               else
+                  return(false);
+              }
+     }
+   else
+      if(EA_STOP_DAY<EA_START_DAY)
+        {
+         if(today>EA_START_DAY || today<EA_STOP_DAY)
+            return(true);
+         else
+            if(today==EA_START_DAY)
+              {
+               if(TimeCurrent()>=datetime(StringToTime(EA_START_TIME)))
+                  return(true);
+               else
+                  return(false);
+              }
+            else
+               if(today==EA_STOP_DAY)
+                 {
+                  if(TimeCurrent()<datetime(StringToTime(EA_STOP_TIME)))
+                     return(true);
+                  else
+                     return(false);
+                 }
+        }
+      else
+         if(EA_STOP_DAY==EA_START_DAY)
+           {
+            datetime st=(datetime)StringToTime(EA_START_TIME);
+            datetime et=(datetime)StringToTime(EA_STOP_TIME);
+
+            if(et>st)
+              {
+               if(today!=EA_STOP_DAY)
+                  return(false);
+               else
+                  if(TimeCurrent()>=st && TimeCurrent()<et)
+                     return(true);
+                  else
+                     return(false);
+              }
+            else
+              {
+               if(today!=EA_STOP_DAY)
+                  return(true);
+               else
+                  if(TimeCurrent()>=et && TimeCurrent()<st)
+                     return(false);
+                  else
+                     return(true);
+              }
+
+           }
+   /*int JamH1[] = { 10, 20, 30, 40 }; // A[2] == 30
+    //   if (JamH1[Hour()] == Hour()) Alert("Trade");
+    if (Hour() >= StartHour1 && Hour() <= EndHour1 && DayOfWeek() == 1 && MondayTrade )  return (true);
+    if (Hour() >= StartHour2 && Hour() <= EndHour2 && DayOfWeek() == 2 && TuesdayTrade )  return (true);
+    if (Hour() >= StartHour3 && Hour() <= EndHour3 && DayOfWeek() == 3 && WednesdayTrade )  return (true);
+    if (Hour() >= StartHour4 && Hour() <= EndHour4 && DayOfWeek() == 4 && ThursdayTrade )  return (true);
+    if (Hour() >= StartHour5 && Hour() <= EndHour5 && DayOfWeek() == 5 && FridayTrade && !ExitFriday)  return (true);
+    if (StartHour5 <=StartHourX - LastTradeFriday - 1 && Hour() >= StartHour5 && Hour() <= StartHourX - LastTradeFriday - 1 && DayOfWeek() == 5 && FridayTrade && ExitFriday)  return (true);
+    if ( DayOfWeek() == 1 && !MondayTrade )  return (true);
+    if ( DayOfWeek() == 2 && !TuesdayTrade )  return (true);
+    if ( DayOfWeek() == 3 && !WednesdayTrade )  return (true);
+    if ( DayOfWeek() == 4 && !ThursdayTrade )  return (true);
+    if ( DayOfWeek() == 5 && !FridayTrade && ExitFridayOk() == 0)  return (true);
+    */
+
+   return (ret);
+  }
 //+------------------------------------------------------------------+
 //| Balance                                                          |
 //+------------------------------------------------------------------+
