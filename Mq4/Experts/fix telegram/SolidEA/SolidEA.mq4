@@ -241,7 +241,7 @@ input bool Skip = false; //Skip Initial signals
 input int magic_Number = 2222; // Magic Number
 
 
-input string h1 = "===Time Management System===";
+input string h1 = "================Time Management System ========================";
 input bool SET_TRADING_DAYS = false;
 input DYS_WEEK EA_START_DAY = Sunday;
 input string EA_START_TIME = "22:00";
@@ -249,9 +249,8 @@ input DYS_WEEK EA_STOP_DAY = Friday;
 input string EA_STOP_TIME = "22:00";
 
 input TIME_LOCK EA_TIME_LOCK_ACTION = closeall;
-
 input Strategy_Type Strategy = single; //Strategy
-input string Master1 = "=====Open Indicator I====="; //==== Master Indicator_I=====
+input string Master1 = "====================Open Indicator I======================"; //==== Master Indicator_I=====
 input indi indikator1 = uni; //Select desire Indicator from installed indicators Also This is Master
 input ENUM_TIMEFRAMES timeframe1 = PERIOD_D1; // Entry Time Frame
 input inditrend indicatortrend1 = withtrend; //Type Of Entry
@@ -561,6 +560,9 @@ int Signal3[];
 int exit1[];
 int exit2[];
 string cc0 = "";
+bool MaxSellExceed=false;
+bool MaxBuyExceed=false;
+
 // Class object
 CExecute *trades[];
 CPosition *Positions[];
@@ -598,6 +600,8 @@ public:
   };
 CMyBot bot;
 int getme_result;
+datetime lastopentime=0;
+datetime lastclosetime=0;
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
@@ -941,7 +945,8 @@ void OnTick()
   {
 //---
    Telegram();
-
+   if(showfibo)
+      snrfibo();
    ClosingFilter();
    bool TradeAllow=TradeDays();
    if(TradeAllow)
@@ -963,6 +968,7 @@ void OnTick()
             if(m!=MasterSignal[i]&&m!=0)
               {
                MasterSignal[i] = m;
+               Print(MasterSignal[i]);
                change=true;
               }
            }
@@ -1020,7 +1026,7 @@ void OnTick()
                if(MasterSignal[i] > 0)
                  {
                   string Cmnt = commentselect == Auto?comment: comment1;
-                  Buy(i, Cmnt);
+                  Buy(i, Cmnt,indikator1,timeframe1);
                   mainSignal = 1;
                   change=false;
 
@@ -1028,21 +1034,22 @@ void OnTick()
                if(Signal2[i] > 0)
                  {
                   string Cmnt = commentselect == Auto?comment: comment2;
-                  Buy(i, Cmnt);
+                  Buy(i, Cmnt,indikator2,timeframe2);
+
                   mainSignal = 1;
                   change=false;
                  }
                if(Signal3[i] > 0)
                  {
                   string Cmnt = commentselect == Auto?comment: comment3;
-                  Buy(i, Cmnt);
+                  Buy(i, Cmnt,indikator3,timeframe3);
                   mainSignal = 1;
                   change=false;
                  }
                if(Signal4[i] > 0)
                  {
                   string Cmnt = commentselect == Auto?comment: comment4;
-                  Buy(i, Cmnt);
+                  Buy(i, Cmnt,indikator4,timeframe4);
                   mainSignal = 1;
                   change=false;
                  }
@@ -1054,28 +1061,28 @@ void OnTick()
                if(MasterSignal[i] < 0)
                  {
                   string Cmnt = commentselect == Auto?comment: comment1;
-                  Sell(i, Cmnt);
+                  Sell(i, Cmnt,indikator1,timeframe1);
                   mainSignal = -1;
                   change=false;
                  }
                if(Signal2[i] < 0)
                  {
                   string Cmnt = commentselect == Auto?comment: comment2;
-                  Sell(i, Cmnt);
+                  Sell(i, Cmnt,indikator2,timeframe2);
                   mainSignal = -1;
                   change=false;
                  }
                if(Signal3[i] < 0)
                  {
                   string Cmnt = commentselect == Auto?comment: comment3;
-                  Sell(i, Cmnt);
+                  Sell(i, Cmnt,indikator3,timeframe3);
                   mainSignal = -1;
                   change=false;
                  }
                if(Signal4[i] < 0)
                  {
                   string Cmnt = commentselect == Auto?comment: comment4;
-                  Sell(i, Cmnt);
+                  Sell(i, Cmnt,indikator4,timeframe4);
                   mainSignal = -1;
                   change=false;
                  }
@@ -1092,21 +1099,21 @@ void OnTick()
                if(Signal2[i] > 0 && MasterSignal[i] > 0)
                  {
                   string Cmnt = commentselect == Auto?comment: comment2;
-                  Buy(i, Cmnt);
+                  Buy(i, Cmnt,indikator1,timeframe1,indikator2,timeframe2);
                   mainSignal = 1;
                   change=false;
                  }
                if(Signal3[i] > 0 && MasterSignal[i] > 0)
                  {
                   string Cmnt = commentselect == Auto?comment: comment3;
-                  Buy(i, Cmnt);
+                  Buy(i, Cmnt,indikator1,timeframe1,indikator3,timeframe3);
                   mainSignal = 1;
                   change=false;
                  }
                if(Signal4[i] > 0 && MasterSignal[i] > 0)
                  {
                   string Cmnt = commentselect == Auto?comment: comment4;
-                  Buy(i, Cmnt);
+                  Buy(i, Cmnt,indikator1,timeframe1,indikator4,timeframe4);
                   mainSignal = 1;
                   change=false;
                  }
@@ -1119,21 +1126,21 @@ void OnTick()
                if(Signal2[i] < 0 && MasterSignal[i] < 0)
                  {
                   string Cmnt = commentselect == Auto?comment: comment2;
-                  Sell(i, Cmnt);
+                  Sell(i, Cmnt,indikator1,timeframe1,indikator2,timeframe2);
                   mainSignal = -1;
                   change=false;
                  }
                if(Signal3[i] < 0 && MasterSignal[i] < 0)
                  {
                   string Cmnt = commentselect == Auto?comment: comment3;
-                  Sell(i, Cmnt);
+                  Sell(i, Cmnt,indikator1,timeframe1,indikator3,timeframe3);
                   mainSignal = -1;
                   change=false;
                  }
                if(Signal4[i] < 0 && MasterSignal[i] < 0)
                  {
                   string Cmnt = commentselect == Auto?comment: comment4;
-                  Sell(i, Cmnt);
+                  Sell(i, Cmnt,indikator1,timeframe1,indikator4,timeframe4);
                   mainSignal = -1;
                   change=false;
                  }
@@ -1149,7 +1156,7 @@ void OnTick()
                if(Signal2[i] > 0 && Signal3[i] > 0 && Signal4[i] > 0 && MasterSignal[i] > 0)
                  {
                   string Cmnt = commentselect == Auto?comment: comment2;
-                  Buy(i, Cmnt);
+                  Buy(i, Cmnt,indikator1,timeframe1,indikator2,timeframe2,indikator3,timeframe3,indikator4,timeframe4);
                   change=false;
                   mainSignal = 1;
                  }
@@ -1164,7 +1171,7 @@ void OnTick()
                if(Signal2[i] < 0 && Signal3[i] < 0 && Signal4[i] < 0 && MasterSignal[i] < 0)
                  {
                   string Cmnt = commentselect == Auto?comment: comment2;
-                  Sell(i, Cmnt);
+                  Sell(i, Cmnt,indikator1,timeframe1,indikator2,timeframe2,indikator3,timeframe3,indikator4,timeframe4);
                   mainSignal = -1;
                   change=false;
                  }
@@ -1179,6 +1186,8 @@ void OnTick()
                  {
                   BuyPositions[i].GroupCloseAll(30);
                   BuyPendings[i].GroupCloseAll(30);
+                        cc0="Sell Order Closed Buy "+s1+s2+s3+s4+" @ "+(string)openPrice+" Time: "+ TimeToString(TimeCurrent(),TIME_MINUTES)+" Date: "+ TimeToString(TimeCurrent(),TIME_DATE);
+
                  }
                if(exit1[i] < 0 && mainSignal > 0)
                  {
@@ -1426,56 +1435,167 @@ double CalcLot(string symbol)
    return Lot;
   }
 //+------------------------------------------------------------------+
-void Buy(int i, string Cmnt)
+//|                                                                  |
+//+------------------------------------------------------------------+
+string Get_Timeframe(ENUM_TIMEFRAMES tf)
   {
-   if(usemode==Auto)
-     {
-      double volume = CalcLot(Symbols[i]);
-      // =====================================Buy =====================================
-      if(Execution_Mode == instan)
-        {
-         trades[i].Position(TYPE_POSITION_BUY, volume, StopLoss, TakeProfit, SLTP_PIPS, 30, Cmnt);
-        }
-      if(Execution_Mode == limit)
-        {
-         double openPrice = tools[i].Bid()-orderdistance*tools[i].Pip();
-         trades[i].Order(TYPE_ORDER_BUYLIMIT, volume, openPrice, StopLoss, TakeProfit, SLTP_PIPS, 0, 30, Cmnt);
-        }
-      if(Execution_Mode == stop)
-        {
-         double openPrice = tools[i].Ask()+orderdistance*tools[i].Pip();
-         trades[i].Order(TYPE_ORDER_BUYSTOP, volume, openPrice, StopLoss, TakeProfit, SLTP_PIPS, 0, 30, Cmnt);
-        }
+   string txt="";
 
+   switch(tf)
+     {
+      case     1:
+         txt ="M1";
+         break;
+      case     5:
+         txt ="M5";
+         break;
+      case    15:
+         txt ="M15";
+         break;
+      case    30:
+         txt ="M30";
+         break;
+      case    60:
+         txt ="H1";
+         break;
+      case   240:
+         txt ="H4";
+         break;
+      case  1440:
+         txt ="D1";
+         break;
+      case 10080:
+         txt ="W1";
+         break;
+      case 43200:
+         txt ="MN1";
+         break;
      }
+   return txt;
+  }
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+string Get_Indicator(indi indicator)
+  {
+   string txt="";
+
+   switch(indicator)
+     {
+      case     1:
+         txt ="Beast";
+         break;
+      case     2:
+         txt ="Triger";
+         break;
+      case    3:
+         txt ="Uni";
+         break;
+      case    4:
+         txt ="Zigzag";
+         break;
+      case    5:
+         txt ="HMA";
+         break;
+      case   6:
+         txt ="HMATrend";
+         break;
+     }
+   return txt;
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+string Get_Strategy()
+  {
+   string txt="";
+
+   switch(Strategy)
+     {
+      case     0:
+         txt ="Single Signal";
+         break;
+      case     1:
+         txt ="Seperate Signal";
+         break;
+      case    2:
+         txt ="Joint Signal";
+         break;
+     }
+   return txt;
+  }
+//+------------------------------------------------------------------+
+void Buy(int i, string Cmnt, indi i1,ENUM_TIMEFRAMES tf1=0,indi i2=0,ENUM_TIMEFRAMES tf2=0, indi i3=0,ENUM_TIMEFRAMES tf3=0, indi i4=0,ENUM_TIMEFRAMES tf4=0)
+  {
+
+   double volume = CalcLot(Symbols[i]);
+   string s1=Get_Indicator(i1)+" "+Get_Timeframe(tf1)+" ";
+   string s2=i2==0?"":Get_Indicator(i2)+" "+Get_Timeframe(tf2)+" ";
+   string s3=i3==0?"":Get_Indicator(i3)+" "+Get_Timeframe(tf3)+" ";
+   string s4=i4==0?"":Get_Indicator(i4)+" "+Get_Timeframe(tf4)+" ";
+
+// =====================================Buy =====================================
+   if(Execution_Mode == instan)
+     {
+      if(usemode==Auto&&!MaxBuyExceed)
+         trades[i].Position(TYPE_POSITION_BUY, volume, StopLoss, TakeProfit, SLTP_PIPS, 30, Cmnt);
+      cc0=Get_Strategy()+", "+Symbols[i]+", Buy, " +s1+s2+s3+s4+" @ "+(string)tools[i].Ask()+" Time: "+ TimeToString(TimeCurrent(),TIME_MINUTES)+" Date: "+ TimeToString(TimeCurrent(),TIME_DATE);
+     }
+   if(Execution_Mode == limit&&!MaxBuyExceed)
+     {
+      double openPrice = tools[i].Bid()-orderdistance*tools[i].Pip();
+      if(usemode==Auto)
+         trades[i].Order(TYPE_ORDER_BUYLIMIT, volume, openPrice, StopLoss, TakeProfit, SLTP_PIPS, 0, 30, Cmnt);
+      cc0=Get_Strategy()+", "+Symbols[i]+", BuyLimit, "+s1+s2+s3+s4+" @ "+(string)openPrice+" Time: "+ TimeToString(TimeCurrent(),TIME_MINUTES)+" Date: "+ TimeToString(TimeCurrent(),TIME_DATE);
+     }
+   if(Execution_Mode == stop&&!MaxBuyExceed)
+     {
+      double openPrice = tools[i].Ask()+orderdistance*tools[i].Pip();
+      if(usemode==Auto)
+         trades[i].Order(TYPE_ORDER_BUYSTOP, volume, openPrice, StopLoss, TakeProfit, SLTP_PIPS, 0, 30, Cmnt);
+      cc0=Get_Strategy()+", "+Symbols[i]+", BuyStop, "+s1+s2+s3+s4+" @ "+(string)openPrice+" Time: "+ TimeToString(TimeCurrent(),TIME_MINUTES)+" Date: "+ TimeToString(TimeCurrent(),TIME_DATE);
+     }
+
+
   }
 //+------------------------------------------------------------------+
 
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-void Sell(int i, string Cmnt)
+void Sell(int i, string Cmnt, indi i1,ENUM_TIMEFRAMES tf1=0,indi i2=0,ENUM_TIMEFRAMES tf2=0, indi i3=0,ENUM_TIMEFRAMES tf3=0, indi i4=0,ENUM_TIMEFRAMES tf4=0)
   {
-   if(usemode==Auto)
+   double volume = CalcLot(Symbols[i]);
+   string s1=Get_Indicator(i1)+" "+Get_Timeframe(tf1)+" ";
+   string s2=i2==0?"":Get_Indicator(i2)+" "+Get_Timeframe(tf2)+" ";
+   string s3=i3==0?"":Get_Indicator(i3)+" "+Get_Timeframe(tf3)+" ";
+   string s4=i4==0?"":Get_Indicator(i4)+" "+Get_Timeframe(tf4)+" ";
+   if(Execution_Mode == instan)
      {
-      double volume = CalcLot(Symbols[i]);
-
-      if(Execution_Mode == instan)
-        {
+      if(usemode==Auto&&!MaxSellExceed)
          trades[i].Position(TYPE_POSITION_SELL, volume, StopLoss, TakeProfit, SLTP_PIPS, 30, Cmnt);
-        }
-      if(Execution_Mode == limit)
-        {
-         double openPrice = tools[i].Ask()+orderdistance*tools[i].Pip();
+      cc0=Get_Strategy()+", "+Symbols[i]+", Sell, "+s1+s2+s3+s4+" @ "+(string)tools[i].Bid()+" Time: "+ TimeToString(TimeCurrent(),TIME_MINUTES)+" Date: "+ TimeToString(TimeCurrent(),TIME_DATE);
+
+     }
+   if(Execution_Mode == limit&&!MaxSellExceed)
+     {
+      double openPrice = tools[i].Ask()+orderdistance*tools[i].Pip();
+      if(usemode==Auto)
          trades[i].Order(TYPE_ORDER_SELLLIMIT, volume, openPrice, StopLoss, TakeProfit, SLTP_PIPS, 0, 30, Cmnt);
-        }
-      if(Execution_Mode == stop)
-        {
-         double openPrice = tools[i].Bid()-orderdistance*tools[i].Pip();
+      cc0=Get_Strategy()+", "+Symbols[i]+" ,SellLimit, "+s1+s2+s3+s4+" @ "+(string)openPrice+" Time: "+ TimeToString(TimeCurrent(),TIME_MINUTES)+" Date: "+ TimeToString(TimeCurrent(),TIME_DATE);
+
+     }
+   if(Execution_Mode == stop&&!MaxSellExceed)
+     {
+      double openPrice = tools[i].Bid()-orderdistance*tools[i].Pip();
+      if(usemode==Auto)
          trades[i].Order(TYPE_ORDER_SELLSTOP, volume, openPrice, StopLoss, TakeProfit, SLTP_PIPS, 0, 30, Cmnt);
-        }
+      cc0=Get_Strategy()+", "+Symbols[i]+", SellStop, "+s1+s2+s3+s4+" @ "+(string)openPrice+" Time: "+ TimeToString(TimeCurrent(),TIME_MINUTES)+" Date: "+ TimeToString(TimeCurrent(),TIME_DATE);
+
      }
   }
+
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
@@ -1492,7 +1612,20 @@ void ClosingFilter()
       Tb=Tb+BuyPositions[x].GroupTotal();
       ProfitInPips=ProfitInPips+profitPipsPerSymbol(Positions[x],tools[x]);
      }
-
+   if(Ts>maxsell)
+      MaxSellExceed=true;
+   else
+      MaxSellExceed=false;
+   if(Tb>maxbuy)
+      MaxBuyExceed=true;
+   else
+      MaxBuyExceed=false;
+   int totalopened=Ts+Tb;
+   if(totalopened>MaxLevel)
+     {
+      MaxSellExceed=true;
+      MaxBuyExceed=true;
+     }
    if(Profit_Type==InDollarsProfit)
      {
       if(Profit>ProfitValue)
@@ -2835,5 +2968,124 @@ void _PlaySound(const string FileName)
    if(SoundIsEnabled)
       PlaySound(FileName);
 //---
+  }
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void snrfibo()
+  {
+   int counted_bars = IndicatorCounted();
+   double day_highx = 0;
+   double day_lowx = 0;
+   double yesterday_highx = 0;
+   double yesterday_openx = 0;
+   double yesterday_lowx = 0;
+   double yesterday_closex = 0;
+   double today_openx = 0;
+   double P = 0, S = 0, R = 0, S1 = 0, R1 = 0, S2 = 0, R2 = 0, S3 = 0, R3 = 0;
+   int cnt = 720;
+   double cur_dayx = 0;
+   double prev_dayx = 0;
+   double rates_d1x[2][6];
+//---- exit if period is greater than daily charts
+   if(Period() > 1440)
+     {
+      Print("Error - Chart period is greater than 1 day.");
+      return; // then exit
+     }
+   cur_dayx = TimeDay(datetime(Time[0] - (gmtoffset()*3600)));
+   yesterday_closex = iClose(NULL,snrperiod,1);
+   today_openx = iOpen(NULL,snrperiod,0);
+   yesterday_highx = iHigh(NULL,snrperiod,1);//day_high;
+   yesterday_lowx = iLow(NULL,snrperiod,1);//day_low;
+   day_highx = iHigh(NULL,snrperiod,1);
+   day_lowx  = iLow(NULL,snrperiod,1);
+   prev_dayx = cur_dayx;
+
+   yesterday_highx = MathMax(yesterday_highx,day_highx);
+   yesterday_lowx = MathMin(yesterday_lowx,day_lowx);
+// Comment ("Yesterday High : "+ yesterday_high + ", Yesterday Low : " + yesterday_low + ", Yesterday Close : " + yesterday_close );
+
+//------ Pivot Points ------
+   R = (yesterday_highx - yesterday_lowx);
+   P = (yesterday_highx + yesterday_lowx + yesterday_closex)/3; //Pivot
+   R1 = P + (R * 0.382);
+   R2 = P + (R * 0.618);
+   R3 = P + (R * 1);
+   S1 = P - (R * 0.382);
+   S2 = P - (R * 0.618);
+   S3 = P - (R * 1);
+//---- Set line labels on chart window
+   drawLine(R3, "R3", clrLime, 0);
+   drawLabel("Resistance 3", R3, clrLime);
+   drawLine(R2, "R2", clrGreen, 0);
+   drawLabel("Resistance 2", R2, clrGreen);
+   drawLine(R1, "R1", clrDarkGreen, 0);
+   drawLabel("Resistance 1", R1, clrDarkGreen);
+   drawLine(P, "PIVIOT", clrBlue, 1);
+   drawLabel("Piviot level", P, clrBlue);
+   drawLine(S1, "S1", clrMaroon, 0);
+   drawLabel("Support 1", S1, clrMaroon);
+   drawLine(S2, "S2", clrCrimson, 0);
+   drawLabel("Support 2", S2, clrCrimson);
+   drawLine(S3, "S3", clrRed, 0);
+   drawLabel("Support 3", S3, clrRed);
+   return;
+//----
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void drawLabel(string A_name_0, double A_price_8, color A_color_16)
+  {
+   if(ObjectFind(A_name_0) != 0)
+     {
+      ObjectCreate(A_name_0, OBJ_TEXT, 0, Time[10], A_price_8);
+      ObjectSetText(A_name_0, A_name_0, 8, "Arial", CLR_NONE);
+      ObjectSet(A_name_0, OBJPROP_COLOR, A_color_16);
+      return;
+     }
+   ObjectMove(A_name_0, 0, Time[10], A_price_8);
+  }
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void drawLine(double A_price_0, string A_name_8, color A_color_16, int Ai_20)
+  {
+   if(ObjectFind(A_name_8) != 0)
+     {
+      ObjectCreate(A_name_8, OBJ_HLINE, 0, Time[0], A_price_0, Time[0], A_price_0);
+      if(Ai_20 == 1)
+         ObjectSet(A_name_8, OBJPROP_STYLE, STYLE_SOLID);
+      else
+         ObjectSet(A_name_8, OBJPROP_STYLE, STYLE_DOT);
+      ObjectSet(A_name_8, OBJPROP_COLOR, A_color_16);
+      ObjectSet(A_name_8, OBJPROP_WIDTH, 1);
+      return;
+     }
+   ObjectDelete(A_name_8);
+   ObjectCreate(A_name_8, OBJ_HLINE, 0, Time[0], A_price_0, Time[0], A_price_0);
+   if(Ai_20 == 1)
+      ObjectSet(A_name_8, OBJPROP_STYLE, STYLE_SOLID);
+   else
+      ObjectSet(A_name_8, OBJPROP_STYLE, STYLE_DOT);
+   ObjectSet(A_name_8, OBJPROP_COLOR, A_color_16);
+   ObjectSet(A_name_8, OBJPROP_WIDTH, 1);
+  }
+
+
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void QnDeleteObject()
+  {
+   for(int i=ObjectsTotal()-1; i>=0; i--)
+     {
+      string oName = ObjectName(i);
+      ObjectDelete(oName);
+     }
   }
 //+------------------------------------------------------------------+
