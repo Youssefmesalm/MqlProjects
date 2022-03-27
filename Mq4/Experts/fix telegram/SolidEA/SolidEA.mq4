@@ -1186,7 +1186,8 @@ void OnTick()
                  {
                   BuyPositions[i].GroupCloseAll(30);
                   BuyPendings[i].GroupCloseAll(30);
-                        cc0="Sell Order Closed Buy "+s1+s2+s3+s4+" @ "+(string)openPrice+" Time: "+ TimeToString(TimeCurrent(),TIME_MINUTES)+" Date: "+ TimeToString(TimeCurrent(),TIME_DATE);
+                  
+                  cc0="Sell Order Closed Buy "+Get_Strategy(1)+"on "+Symbols[i]+" @ "+(string)tools[i].Bid()+" Time: "+ TimeToString(TimeCurrent(),TIME_MINUTES)+" Date: "+ TimeToString(TimeCurrent(),TIME_DATE);
 
                  }
                if(exit1[i] < 0 && mainSignal > 0)
@@ -1507,10 +1508,10 @@ string Get_Indicator(indi indicator)
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-string Get_Strategy()
+string Get_Strategy(int type)
   {
    string txt="";
-
+iif(type==0)
    switch(Strategy)
      {
       case     0:
@@ -1522,6 +1523,17 @@ string Get_Strategy()
       case    2:
          txt ="Joint Signal";
          break;
+     }
+     if(type==1)
+     switch(close_Strategy)
+     {
+      case     0:
+         txt ="Seperate SIGNAL ";
+         break;
+      case     1:
+         txt ="Joint Signal";
+         break;
+    
      }
    return txt;
   }
@@ -1540,21 +1552,21 @@ void Buy(int i, string Cmnt, indi i1,ENUM_TIMEFRAMES tf1=0,indi i2=0,ENUM_TIMEFR
      {
       if(usemode==Auto&&!MaxBuyExceed)
          trades[i].Position(TYPE_POSITION_BUY, volume, StopLoss, TakeProfit, SLTP_PIPS, 30, Cmnt);
-      cc0=Get_Strategy()+", "+Symbols[i]+", Buy, " +s1+s2+s3+s4+" @ "+(string)tools[i].Ask()+" Time: "+ TimeToString(TimeCurrent(),TIME_MINUTES)+" Date: "+ TimeToString(TimeCurrent(),TIME_DATE);
+      cc0=Get_Strategy(0)+", "+Symbols[i]+", Buy, " +s1+s2+s3+s4+" @ "+(string)tools[i].Ask()+" Time: "+ TimeToString(TimeCurrent(),TIME_MINUTES)+" Date: "+ TimeToString(TimeCurrent(),TIME_DATE);
      }
    if(Execution_Mode == limit&&!MaxBuyExceed)
      {
       double openPrice = tools[i].Bid()-orderdistance*tools[i].Pip();
       if(usemode==Auto)
          trades[i].Order(TYPE_ORDER_BUYLIMIT, volume, openPrice, StopLoss, TakeProfit, SLTP_PIPS, 0, 30, Cmnt);
-      cc0=Get_Strategy()+", "+Symbols[i]+", BuyLimit, "+s1+s2+s3+s4+" @ "+(string)openPrice+" Time: "+ TimeToString(TimeCurrent(),TIME_MINUTES)+" Date: "+ TimeToString(TimeCurrent(),TIME_DATE);
+      cc0=Get_Strategy(0)+", "+Symbols[i]+", BuyLimit, "+s1+s2+s3+s4+" @ "+(string)openPrice+" Time: "+ TimeToString(TimeCurrent(),TIME_MINUTES)+" Date: "+ TimeToString(TimeCurrent(),TIME_DATE);
      }
    if(Execution_Mode == stop&&!MaxBuyExceed)
      {
       double openPrice = tools[i].Ask()+orderdistance*tools[i].Pip();
       if(usemode==Auto)
          trades[i].Order(TYPE_ORDER_BUYSTOP, volume, openPrice, StopLoss, TakeProfit, SLTP_PIPS, 0, 30, Cmnt);
-      cc0=Get_Strategy()+", "+Symbols[i]+", BuyStop, "+s1+s2+s3+s4+" @ "+(string)openPrice+" Time: "+ TimeToString(TimeCurrent(),TIME_MINUTES)+" Date: "+ TimeToString(TimeCurrent(),TIME_DATE);
+      cc0=Get_Strategy(0)+", "+Symbols[i]+", BuyStop, "+s1+s2+s3+s4+" @ "+(string)openPrice+" Time: "+ TimeToString(TimeCurrent(),TIME_MINUTES)+" Date: "+ TimeToString(TimeCurrent(),TIME_DATE);
      }
 
 
@@ -1575,7 +1587,7 @@ void Sell(int i, string Cmnt, indi i1,ENUM_TIMEFRAMES tf1=0,indi i2=0,ENUM_TIMEF
      {
       if(usemode==Auto&&!MaxSellExceed)
          trades[i].Position(TYPE_POSITION_SELL, volume, StopLoss, TakeProfit, SLTP_PIPS, 30, Cmnt);
-      cc0=Get_Strategy()+", "+Symbols[i]+", Sell, "+s1+s2+s3+s4+" @ "+(string)tools[i].Bid()+" Time: "+ TimeToString(TimeCurrent(),TIME_MINUTES)+" Date: "+ TimeToString(TimeCurrent(),TIME_DATE);
+      cc0=Get_Strategy(0)+", "+Symbols[i]+", Sell, "+s1+s2+s3+s4+" @ "+(string)tools[i].Bid()+" Time: "+ TimeToString(TimeCurrent(),TIME_MINUTES)+" Date: "+ TimeToString(TimeCurrent(),TIME_DATE);
 
      }
    if(Execution_Mode == limit&&!MaxSellExceed)
@@ -1583,7 +1595,7 @@ void Sell(int i, string Cmnt, indi i1,ENUM_TIMEFRAMES tf1=0,indi i2=0,ENUM_TIMEF
       double openPrice = tools[i].Ask()+orderdistance*tools[i].Pip();
       if(usemode==Auto)
          trades[i].Order(TYPE_ORDER_SELLLIMIT, volume, openPrice, StopLoss, TakeProfit, SLTP_PIPS, 0, 30, Cmnt);
-      cc0=Get_Strategy()+", "+Symbols[i]+" ,SellLimit, "+s1+s2+s3+s4+" @ "+(string)openPrice+" Time: "+ TimeToString(TimeCurrent(),TIME_MINUTES)+" Date: "+ TimeToString(TimeCurrent(),TIME_DATE);
+      cc0=Get_Strategy(0)+", "+Symbols[i]+" ,SellLimit, "+s1+s2+s3+s4+" @ "+(string)openPrice+" Time: "+ TimeToString(TimeCurrent(),TIME_MINUTES)+" Date: "+ TimeToString(TimeCurrent(),TIME_DATE);
 
      }
    if(Execution_Mode == stop&&!MaxSellExceed)
@@ -1591,7 +1603,7 @@ void Sell(int i, string Cmnt, indi i1,ENUM_TIMEFRAMES tf1=0,indi i2=0,ENUM_TIMEF
       double openPrice = tools[i].Bid()-orderdistance*tools[i].Pip();
       if(usemode==Auto)
          trades[i].Order(TYPE_ORDER_SELLSTOP, volume, openPrice, StopLoss, TakeProfit, SLTP_PIPS, 0, 30, Cmnt);
-      cc0=Get_Strategy()+", "+Symbols[i]+", SellStop, "+s1+s2+s3+s4+" @ "+(string)openPrice+" Time: "+ TimeToString(TimeCurrent(),TIME_MINUTES)+" Date: "+ TimeToString(TimeCurrent(),TIME_DATE);
+      cc0=Get_Strategy(0)+", "+Symbols[i]+", SellStop, "+s1+s2+s3+s4+" @ "+(string)openPrice+" Time: "+ TimeToString(TimeCurrent(),TIME_MINUTES)+" Date: "+ TimeToString(TimeCurrent(),TIME_DATE);
 
      }
   }
