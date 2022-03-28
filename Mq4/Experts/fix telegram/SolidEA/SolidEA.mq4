@@ -127,6 +127,13 @@ enum trademode
 // Telegram
    None // None
   };
+
+enum commentMode
+  {
+   AutoComment = 0, // Auto
+   ManualComment = 1, // maunual
+
+  };
 enum typeorder
   {
    buyx = 0,
@@ -151,7 +158,6 @@ enum caraclose
 // Take Profit and Stop Loss
    bar = 2,
 // Close With N Bar
-   date = 3 // Close With Date
   };
 enum periodtf
   {
@@ -194,11 +200,10 @@ enum DYS_WEEK
 
 enum TIME_LOCK
   {
-   closeall,
-//CLOSE_ALL_TRADES
-   closeprofit,
-//CLOSE_ALL_PROFIT_TRADES
-   breakevenprofit//MOVE_PROFIT_TRADES_TO_BREAKEVEN
+   closeall,      //CLOSE_ALL_TRADES
+   closeprofit,   //CLOSE_ALL_PROFIT_TRADES
+   breakevenprofit,//MOVE_PROFIT_TRADES_TO_BREAKEVEN
+   None,           //Don't Open New Trade
   };
 
 enum md
@@ -231,75 +236,75 @@ enum ENUM_MODE
 string EA_Name = "TFM EA v1.00";
 
 //User Input
-input string h0 = "========General===========";
-input int MT4account = 1234567; // MT4 Number/ Pascode
-input string EAPass = ""; // EA PassWord
-input trademode usemode = Auto; // Trade Mode
-input typeorder Trade_Direction = bothx; // Trade Direction
-input bool Show_Trading_Session = false;
-input execute Execution_Mode = instan; //Order Execution Mode
-input int orderdistance = 30; //Order Distance
-input bool delete_Pending = false; //Delete Pending Order
-input int Bars_to_Delete_Pending=0; // Number of Bars to delete Pending
-input trademode commentselect = Auto; // Comment
-input string comment = "YM"; // Auto Comment
-input string Prefix = ""; //Symbol Prefix
-input string Suffix = ""; //Symbol Suffix
-input string TradeSymbols = "AUDCAD;AUDCHF;AUDJPY;AUDNZD;AUDUSD;CADCHF"; /*Symbol List (separated by " ; ")*/
-extern bool ShowDashboard = true;
-input ENUM_MODE SelectedMode = COMPACT; /*Dashboard (Size)*/
-input bool Skip = false; //Skip Initial signals
-input int magic_Number = 2222; // magic_Number Number
+input string                  h0 = "==========================General============================";
+input int                     MT4account = 1234567; // MT4 Number/ Pascode
+input string                  EAPass = ""; // EA PassWord
+input                         trademode usemode = Auto; // Trade Mode
+input                         typeorder Trade_Direction = bothx; // Trade Direction
+input execute                 Execution_Mode = instan; //Order Execution Mode
+input int                     orderdistance = 30; //Order Distance
+input bool                    delete_Pending = false; //Delete Pending Order
+input int                     Bars_to_Delete_Pending=0; // Number of Bars to delete Pending
+input commentMode             commentselect = AutoComment; // Comment
+input string                  comment = "YM"; // Auto Comment
+input string                  Prefix = ""; //Symbol Prefix
+input string                  Suffix = ""; //Symbol Suffix
+input string                  TradeSymbols = "AUDCAD;AUDCHF;AUDJPY;AUDNZD;AUDUSD;CADCHF"; /*Symbol List (separated by " ; ")*/
+extern bool                   ShowDashboard = true;
+input ENUM_MODE               SelectedMode = COMPACT; /*Dashboard (Size)*/
+input int                     magic_Number = 2222; // magic_Number Number
 
 
-input string h1 = "================Time Management System ========================";
-input bool SET_TRADING_DAYS = false;
-input DYS_WEEK EA_START_DAY = Sunday;
-input string EA_START_TIME = "22:00";
-input DYS_WEEK EA_STOP_DAY = Friday;
-input string EA_STOP_TIME = "22:00";
+input string                   h1 = "================Time Management System ========================";
+input bool                     SET_TRADING_DAYS = false;          //Use Trtading Days
+input DYS_WEEK                 EA_START_DAY = Sunday;
+input string                   EA_START_TIME = "22:00";
+input DYS_WEEK                 EA_STOP_DAY = Friday;
+input string                   EA_STOP_TIME = "22:00";
+input TIME_LOCK                EA_TIME_LOCK_ACTION = closeall;
 
-input TIME_LOCK EA_TIME_LOCK_ACTION = closeall;
-input Strategy_Type Strategy = single; //Strategy
-input string Master1 = "====================Open Indicator I======================"; //==== Master Indicator_I=====
-input indi indikator1 = uni; //Select desire Indicator from installed indicators Also This is Master
-input ENUM_TIMEFRAMES timeframe1 = PERIOD_D1; // Entry Time Frame
-string comment1 = "B_M30"; //Comment
-extern int shift1 = 1; //Bar shift
+input string                  set1="==================== Stratgies ===================================";
+input Strategy_Type           Strategy = single; //Strategy
+input string                  Master1 = "====================Open Indicator I======================"; //==== Master Indicator_I=====
+input indi                    indikator1 = uni; //Select desire Indicator from installed indicators Also This is Master
+input ENUM_TIMEFRAMES         timeframe1 = PERIOD_D1; // Entry Time Frame
+input string                  comment1 = "B_M30"; //Comment
+extern int                    shift1 = 1; //Bar shift
 
-input string Slave2 = "=====Open Indicator 2====="; //====Slave Indicator_2=====
-input indi indikator2 = uni; //Select desire Indicator from installed indicators Also This is Master
-input ENUM_TIMEFRAMES timeframe2 = PERIOD_M30; // Entry Time Frame
-string comment2 = "B_H1"; //Comment
-extern int shift2 = 1; //Bar shift
+input string                  Slave2 = "=====Open Indicator 2====="; //====Slave Indicator_2=====
+input indi                    indikator2 = uni; //Select desire Indicator from installed indicators Also This is Master
+input ENUM_TIMEFRAMES         timeframe2 = PERIOD_M30; // Entry Time Frame
+input string                  comment2 = "B_H1"; //Comment
+extern int                    shift2 = 1; //Bar shift
 
-input string Slave3 = "=====Open Indicator 3====="; //====Entry Slave Indicator_3=====
-input indi indikator3 = off; //Select desire Indicator from installed indicators Also This is Master
-input ENUM_TIMEFRAMES timeframe3 = PERIOD_M30; // Entry Time Frame_1
-string comment3 = "Z_H1"; //Comment
+input string                  Slave3 = "=====Open Indicator 3====="; //====Entry Slave Indicator_3=====
+input indi                    indikator3 = off; //Select desire Indicator from installed indicators Also This is Master
+input ENUM_TIMEFRAMES         timeframe3 = PERIOD_M30; // Entry Time Frame_1
+input string                  comment3 = "Z_H1"; //Comment
 extern int shift3 = 1; //Bar shift
 
-input string Slave4 = "=====Open Indicator 4====="; //====Entry Slave Indicator_4=====
-input indi indikator4 = off; //Select desire Indicator from installed indicators Also This is Master
-input ENUM_TIMEFRAMES timeframe4 = PERIOD_M30; // Entry Time Frame_1
-string comment4 = "F_H1"; //Comment
-extern int shift4 = 1; //Bar shift
+input string                  Slave4 = "=====Open Indicator 4====="; //====Entry Slave Indicator_4=====
+input indi                    indikator4 = off; //Select desire Indicator from installed indicators Also This is Master
+input ENUM_TIMEFRAMES         timeframe4 = PERIOD_M30; // Entry Time Frame_1
+input string                  comment4 = "F_H1"; //Comment
+extern int                    shift4 = 1; //Bar shift
+input string                  set2=    "=============================== Close Type====================";
+input caraclose               closetype = opposite; //Choose Closing Type
+input closeStrategy           close_Strategy = singleClose;
+input int                     Bars_TO_CLOSE =10; // NO OF BAR TO CLOSE
+input string                  strategy1x = "=====Exit Indicator 1====="; //====Exit Strategy Indicator_1=====
+input indi                    indikator1x = uni; //Select desire Indicator from installed indicators Also This is Master
+input ENUM_TIMEFRAMES         timeframe1x = PERIOD_M30; // Entry Time Frame_1
 
-input caraclose closetype = opposite; //Choose Closing Type
-input closeStrategy close_Strategy = singleClose;
-input string strategy1x = "=====Exit Indicator 1====="; //====Exit Strategy Indicator_1=====
-input indi indikator1x = uni; //Select desire Indicator from installed indicators Also This is Master
-input ENUM_TIMEFRAMES timeframe1x = PERIOD_M30; // Entry Time Frame_1
+input string                  strategy2x = "=====Exit Indicator 2====="; //====Exit Strategy Indicator_2=====
+input indi                    indikator2x = zigzag; //Select desire Indicator from installed indicators Also This is Master
+input ENUM_TIMEFRAMES         timeframe2x = PERIOD_M30; // Entry Time Frame_1
 
-input string strategy2x = "=====Exit Indicator 2====="; //====Exit Strategy Indicator_2=====
-input indi indikator2x = zigzag; //Select desire Indicator from installed indicators Also This is Master
-input ENUM_TIMEFRAMES timeframe2x = PERIOD_M30; // Entry Time Frame_1
-
-input string h2 = "============Money Management========";
-input double Lots = 0.05; //First Lots
-input double SubLots = 0.03; //Sub Lots
-input double Risk = 10; // Risk Percent
-input bool MM = false; // Use Optimal Lot Size
+input string                  h2 = "============Money Management========";
+input double                  Lots = 0.05; //First Lots
+input double                  SubLots = 0.03; //Sub Lots
+input double                  Risk = 10; // Risk Percent
+input bool                    MM = false; // Use Optimal Lot Size
 input string h4 = "=============TP and SL ===============";
 input double TakeProfit = 100; // Take Profit (inPips)
 input bool useAuto_TP = true;
@@ -1099,19 +1104,19 @@ int OnInit()
         }
       if(indikator1x != off)
         {
-         int x1=initialSignal(indikator1x, timeframe1x, comment, 0, Symbols[i]);
-         if(x1!=0&&x1!=exit1[i])
+         int x11=initialSignal(indikator1x, timeframe1x, comment, 0, Symbols[i]);
+         if(x11!=0&&x11!=exit1[i])
            {
-            exit1[i] = x1;
+            exit1[i] = x11;
             exitchange=true;
            }
         }
       if(indikator2x != off)
         {
-         int x2=initialSignal(indikator2x, timeframe2x, comment4, 0, Symbols[i]);
-         if(x2!=0&&x2!=exit2[i])
+         int x22=initialSignal(indikator2x, timeframe2x, comment4, 0, Symbols[i]);
+         if(x22!=0&&x22!=exit2[i])
            {
-            exit2[i] =x2 ;
+            exit2[i] =x22 ;
             exitchange=true;
            }
         }
@@ -1201,19 +1206,19 @@ void OnTick()
            }
          if(indikator1x != off)
            {
-            int x1=GetIndicatorsSignal(indikator1x, timeframe1x, comment, 0, Symbols[i]);
-            if(x1!=0&&x1!=exit1[i])
+            int x11=GetIndicatorsSignal(indikator1x, timeframe1x, comment, 0, Symbols[i]);
+            if(x11!=0&&x11!=exit1[i])
               {
-               exit1[i] = x1;
+               exit1[i] = x11;
                exitchange=true;
               }
            }
          if(indikator2x != off)
            {
-            int x2=GetIndicatorsSignal(indikator2x, timeframe2x, comment4, 0, Symbols[i]);
-            if(x2!=0&&x2!=exit2[i])
+            int x22=GetIndicatorsSignal(indikator2x, timeframe2x, comment4, 0, Symbols[i]);
+            if(x22!=0&&x22!=exit2[i])
               {
-               exit2[i] =x2 ;
+               exit2[i] =x22 ;
                exitchange=true;
               }
            }
@@ -1225,7 +1230,7 @@ void OnTick()
               {
                if(MasterSignal[i] > 0)
                  {
-                  string Cmnt = commentselect == Auto?comment: comment1;
+                  string Cmnt = commentselect == AutoComment?comment: comment1;
                   Buy(i, Cmnt,indikator1,timeframe1);
                   mainSignal = 1;
                   change=false;
@@ -1233,7 +1238,7 @@ void OnTick()
                  }
                if(Signal2[i] > 0)
                  {
-                  string Cmnt = commentselect == Auto?comment: comment2;
+                  string Cmnt = commentselect == AutoComment?comment: comment2;
                   Buy(i, Cmnt,indikator2,timeframe2);
 
                   mainSignal = 1;
@@ -1241,14 +1246,14 @@ void OnTick()
                  }
                if(Signal3[i] > 0)
                  {
-                  string Cmnt = commentselect == Auto?comment: comment3;
+                  string Cmnt = commentselect == AutoComment?comment: comment3;
                   Buy(i, Cmnt,indikator3,timeframe3);
                   mainSignal = 1;
                   change=false;
                  }
                if(Signal4[i] > 0)
                  {
-                  string Cmnt = commentselect == Auto?comment: comment4;
+                  string Cmnt = commentselect == AutoComment?comment: comment4;
                   Buy(i, Cmnt,indikator4,timeframe4);
                   mainSignal = 1;
                   change=false;
@@ -1260,28 +1265,28 @@ void OnTick()
               {
                if(MasterSignal[i] < 0)
                  {
-                  string Cmnt = commentselect == Auto?comment: comment1;
+                  string Cmnt = commentselect == AutoComment?comment: comment1;
                   Sell(i, Cmnt,indikator1,timeframe1);
                   mainSignal = -1;
                   change=false;
                  }
                if(Signal2[i] < 0)
                  {
-                  string Cmnt = commentselect == Auto?comment: comment2;
+                  string Cmnt = commentselect == AutoComment?comment: comment2;
                   Sell(i, Cmnt,indikator2,timeframe2);
                   mainSignal = -1;
                   change=false;
                  }
                if(Signal3[i] < 0)
                  {
-                  string Cmnt = commentselect == Auto?comment: comment3;
+                  string Cmnt = commentselect == AutoComment?comment: comment3;
                   Sell(i, Cmnt,indikator3,timeframe3);
                   mainSignal = -1;
                   change=false;
                  }
                if(Signal4[i] < 0)
                  {
-                  string Cmnt = commentselect == Auto?comment: comment4;
+                  string Cmnt = commentselect == AutoComment?comment: comment4;
                   Sell(i, Cmnt,indikator4,timeframe4);
                   mainSignal = -1;
                   change=false;
@@ -1298,21 +1303,21 @@ void OnTick()
 
                if(Signal2[i] > 0 && MasterSignal[i] > 0)
                  {
-                  string Cmnt = commentselect == Auto?comment: comment2;
+                  string Cmnt = commentselect == AutoComment?comment: comment2;
                   Buy(i, Cmnt,indikator1,timeframe1,indikator2,timeframe2);
                   mainSignal = 1;
                   change=false;
                  }
                if(Signal3[i] > 0 && MasterSignal[i] > 0)
                  {
-                  string Cmnt = commentselect == Auto?comment: comment3;
+                  string Cmnt = commentselect == AutoComment?comment: comment3;
                   Buy(i, Cmnt,indikator1,timeframe1,indikator3,timeframe3);
                   mainSignal = 1;
                   change=false;
                  }
                if(Signal4[i] > 0 && MasterSignal[i] > 0)
                  {
-                  string Cmnt = commentselect == Auto?comment: comment4;
+                  string Cmnt = commentselect == AutoComment?comment: comment4;
                   Buy(i, Cmnt,indikator1,timeframe1,indikator4,timeframe4);
                   mainSignal = 1;
                   change=false;
@@ -1325,21 +1330,21 @@ void OnTick()
 
                if(Signal2[i] < 0 && MasterSignal[i] < 0)
                  {
-                  string Cmnt = commentselect == Auto?comment: comment2;
+                  string Cmnt = commentselect == AutoComment?comment: comment2;
                   Sell(i, Cmnt,indikator1,timeframe1,indikator2,timeframe2);
                   mainSignal = -1;
                   change=false;
                  }
                if(Signal3[i] < 0 && MasterSignal[i] < 0)
                  {
-                  string Cmnt = commentselect == Auto?comment: comment3;
+                  string Cmnt = commentselect == AutoComment?comment: comment3;
                   Sell(i, Cmnt,indikator1,timeframe1,indikator3,timeframe3);
                   mainSignal = -1;
                   change=false;
                  }
                if(Signal4[i] < 0 && MasterSignal[i] < 0)
                  {
-                  string Cmnt = commentselect == Auto?comment: comment4;
+                  string Cmnt = commentselect == AutoComment?comment: comment4;
                   Sell(i, Cmnt,indikator1,timeframe1,indikator4,timeframe4);
                   mainSignal = -1;
                   change=false;
@@ -1355,7 +1360,7 @@ void OnTick()
 
                if(Signal2[i] > 0 && Signal3[i] > 0 && Signal4[i] > 0 && MasterSignal[i] > 0)
                  {
-                  string Cmnt = commentselect == Auto?comment: comment2;
+                  string Cmnt = commentselect == AutoComment?comment: comment2;
                   Buy(i, Cmnt,indikator1,timeframe1,indikator2,timeframe2,indikator3,timeframe3,indikator4,timeframe4);
                   change=false;
                   mainSignal = 1;
@@ -1370,13 +1375,17 @@ void OnTick()
 
                if(Signal2[i] < 0 && Signal3[i] < 0 && Signal4[i] < 0 && MasterSignal[i] < 0)
                  {
-                  string Cmnt = commentselect == Auto?comment: comment2;
+                  string Cmnt = commentselect == AutoComment?comment: comment2;
                   Sell(i, Cmnt,indikator1,timeframe1,indikator2,timeframe2,indikator3,timeframe3,indikator4,timeframe4);
                   mainSignal = -1;
                   change=false;
                  }
 
               }
+           }
+         if(closetype==bar)
+           {
+            closeWithCandleExpiration(Positions[i]);
            }
          if(closetype == opposite&&exitchange)
            {
@@ -1430,7 +1439,7 @@ void OnTick()
      {
       _funcBE();
      }
-
+   timelockaction();
 //---
    if(ShowDashboard)
      {
@@ -2540,7 +2549,24 @@ void DeletePeblndingWithCandle(COrder & pending)
      }
 
   }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void closeWithCandleExpiration(CPosition & pos)
+  {
+   int size=pos.GroupTotal();
+   for(int i=0; i<size; i++)
+     {
+      datetime timeOpen=pos[i].GetTimeOpen();
+      string symb=pos[i].GetSymbol();
+      datetime timetoDelete=iTime(symb,0,Bars_TO_CLOSE);
+      if(timeOpen<=timetoDelete)
+        {
+         pos[i].Close(30);
+        }
+     }
 
+  }
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
@@ -2640,20 +2666,6 @@ bool TradeDays()
               }
 
            }
-   /*int JamH1[] = { 10, 20, 30, 40 }; // A[2] == 30
-    //   if (JamH1[Hour()] == Hour()) Alert("Trade");
-    if (Hour() >= StartHour1 && Hour() <= EndHour1 && DayOfWeek() == 1 && MondayTrade )  return (true);
-    if (Hour() >= StartHour2 && Hour() <= EndHour2 && DayOfWeek() == 2 && TuesdayTrade )  return (true);
-    if (Hour() >= StartHour3 && Hour() <= EndHour3 && DayOfWeek() == 3 && WednesdayTrade )  return (true);
-    if (Hour() >= StartHour4 && Hour() <= EndHour4 && DayOfWeek() == 4 && ThursdayTrade )  return (true);
-    if (Hour() >= StartHour5 && Hour() <= EndHour5 && DayOfWeek() == 5 && FridayTrade && !ExitFriday)  return (true);
-    if (StartHour5 <=StartHourX - LastTradeFriday - 1 && Hour() >= StartHour5 && Hour() <= StartHourX - LastTradeFriday - 1 && DayOfWeek() == 5 && FridayTrade && ExitFriday)  return (true);
-    if ( DayOfWeek() == 1 && !MondayTrade )  return (true);
-    if ( DayOfWeek() == 2 && !TuesdayTrade )  return (true);
-    if ( DayOfWeek() == 3 && !WednesdayTrade )  return (true);
-    if ( DayOfWeek() == 4 && !ThursdayTrade )  return (true);
-    if ( DayOfWeek() == 5 && !FridayTrade && ExitFridayOk() == 0)  return (true);
-    */
 
    return (ret);
   }
@@ -4970,4 +4982,91 @@ void setAlerts(string message)
 
 //+------------------------------------------------------------------+
 
+//+------------------------------------------------------------------+
+void timelockaction(void)
+  {
+   if(TradeDays())
+      return;
+
+   double stoplevel=0,proffit=0,newsl=0,price=0;
+   double ask=0,bid=0;
+   string sy=NULL;
+   int sy_digits=0;
+   double sy_points=0;
+   bool ans=false;
+   bool next=false;
+   int otype=-1;
+   int kk=0;
+
+   for(int i=OrdersTotal()-1; i>=0; i--)
+     {
+      if(!OrderSelect(i,SELECT_BY_POS,MODE_TRADES))
+         continue;
+      if(OrderMagicNumber()!=magic_Number)
+         continue;
+      next=false;
+      ans=false;
+      sy=OrderSymbol();
+      ask=SymbolInfoDouble(sy,SYMBOL_ASK);
+      bid=SymbolInfoDouble(sy,SYMBOL_BID);
+      sy_digits=(int)SymbolInfoInteger(sy,SYMBOL_DIGITS);
+      sy_points=SymbolInfoDouble(sy,SYMBOL_POINT);
+      stoplevel=MarketInfo(sy, MODE_STOPLEVEL)*sy_points;
+      otype=OrderType();
+      kk=0;
+      proffit=OrderProfit()+OrderSwap()+OrderCommission();
+      newsl=OrderOpenPrice();
+
+      switch(EA_TIME_LOCK_ACTION)
+        {
+         case closeall:
+            if(otype>1)
+              {
+               while(kk<5 && !OrderDelete(OrderTicket()))
+                 {
+                  kk++;
+                 }
+              }
+            else
+              {
+               price=(otype==OP_BUY)?bid:ask;
+               while(kk<5 && !OrderClose(OrderTicket(),OrderLots(),price,10))
+                 {
+                  kk++;
+                  price=(otype==OP_BUY)?SymbolInfoDouble(sy,SYMBOL_BID):SymbolInfoDouble(sy,SYMBOL_ASK);
+                 }
+              }
+            break;
+         case closeprofit:
+            if(proffit<=0)
+               break;
+            else
+              {
+               price=(otype==OP_BUY)?bid:ask;
+               while(otype<2 && kk<5 && !OrderClose(OrderTicket(),OrderLots(),price,10))
+                 {
+                  kk++;
+                  price=(otype==OP_BUY)?SymbolInfoDouble(sy,SYMBOL_BID):SymbolInfoDouble(sy,SYMBOL_ASK);
+                 }
+              }
+            break;
+         case breakevenprofit:
+            if(proffit<=0)
+               break;
+            else
+              {
+               price=(otype==OP_BUY)?bid:ask;
+               while(otype<2 && kk<5 && MathAbs(price-newsl)>=stoplevel && !OrderModify(OrderTicket(),newsl,newsl,OrderTakeProfit(),OrderExpiration()))
+                 {
+                  kk++;
+                  price=(otype==OP_BUY)?SymbolInfoDouble(sy,SYMBOL_BID):SymbolInfoDouble(sy,SYMBOL_ASK);
+                 }
+              }
+            break;
+
+        }
+      continue;
+     }
+
+  }
 //+------------------------------------------------------------------+
