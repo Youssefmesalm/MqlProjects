@@ -15,11 +15,18 @@
 #property strict
 #property description Link
 //Define
-#define TOTAL_IndicatorTypes 4+1
 #define SEPARATOR "________________"
 #define TOTAL_OpenOrExit 2
-#define TOTAL_IndicatorNum 4
 
+//---
+#define INAME     "FFC"
+#define TITLE     0
+#define COUNTRY   1
+#define DATE      2
+#define TIME      3
+#define IMPACT    4
+#define FORECAST  5
+#define PREVIOUS  6
 // defination
 #define  NL "\n"
 #define ExpertName         "Solid EA"
@@ -42,6 +49,10 @@
 #include <YM\EXecute\EXecute.mqh>
 #include <YM\Position\Position.mqh>
 #include <YM\Order\Order.mqh>
+#include  <YM\HistoryPosition\HistoryPosition.mqh>
+#import "urlmon.dll"
+int URLDownloadToFileW(int pCaller,string szURL,string szFileName,int dwReserved,int Callback);
+#import
 // includes
 #include <Telegram.mqh>
 //enumeration
@@ -238,7 +249,7 @@ input string TradeSymbols = "AUDCAD;AUDCHF;AUDJPY;AUDNZD;AUDUSD;CADCHF"; /*Symbo
 extern bool ShowDashboard = true;
 input ENUM_MODE SelectedMode = COMPACT; /*Dashboard (Size)*/
 input bool Skip = false; //Skip Initial signals
-input int magic_Number = 2222; // Magic Number
+input int magic_Number = 2222; // magic_Number Number
 
 
 input string h1 = "================Time Management System ========================";
@@ -253,28 +264,24 @@ input Strategy_Type Strategy = single; //Strategy
 input string Master1 = "====================Open Indicator I======================"; //==== Master Indicator_I=====
 input indi indikator1 = uni; //Select desire Indicator from installed indicators Also This is Master
 input ENUM_TIMEFRAMES timeframe1 = PERIOD_D1; // Entry Time Frame
-input inditrend indicatortrend1 = withtrend; //Type Of Entry
 string comment1 = "B_M30"; //Comment
 extern int shift1 = 1; //Bar shift
 
 input string Slave2 = "=====Open Indicator 2====="; //====Slave Indicator_2=====
 input indi indikator2 = uni; //Select desire Indicator from installed indicators Also This is Master
 input ENUM_TIMEFRAMES timeframe2 = PERIOD_M30; // Entry Time Frame
-input inditrend indicatortrend2 = withtrend; //Type Of Entry
 string comment2 = "B_H1"; //Comment
 extern int shift2 = 1; //Bar shift
 
 input string Slave3 = "=====Open Indicator 3====="; //====Entry Slave Indicator_3=====
 input indi indikator3 = off; //Select desire Indicator from installed indicators Also This is Master
 input ENUM_TIMEFRAMES timeframe3 = PERIOD_M30; // Entry Time Frame_1
-input inditrend indicatortrend3 = changetrend; //Type Of Entry
 string comment3 = "Z_H1"; //Comment
 extern int shift3 = 1; //Bar shift
 
 input string Slave4 = "=====Open Indicator 4====="; //====Entry Slave Indicator_4=====
 input indi indikator4 = off; //Select desire Indicator from installed indicators Also This is Master
 input ENUM_TIMEFRAMES timeframe4 = PERIOD_M30; // Entry Time Frame_1
-input inditrend indicatortrend4 = changetrend; //Type Of Entry
 string comment4 = "F_H1"; //Comment
 extern int shift4 = 1; //Bar shift
 
@@ -283,12 +290,10 @@ input closeStrategy close_Strategy = singleClose;
 input string strategy1x = "=====Exit Indicator 1====="; //====Exit Strategy Indicator_1=====
 input indi indikator1x = uni; //Select desire Indicator from installed indicators Also This is Master
 input ENUM_TIMEFRAMES timeframe1x = PERIOD_M30; // Entry Time Frame_1
-inditrend indicatortrend1x = withtrend; //Type Of Entry
 
 input string strategy2x = "=====Exit Indicator 2====="; //====Exit Strategy Indicator_2=====
 input indi indikator2x = zigzag; //Select desire Indicator from installed indicators Also This is Master
 input ENUM_TIMEFRAMES timeframe2x = PERIOD_M30; // Entry Time Frame_1
-inditrend indicatortrend2x = changetrend; //Type Of Entry
 
 input string h2 = "============Money Management========";
 input double Lots = 0.05; //First Lots
@@ -378,37 +383,10 @@ input bool BEAST_alert = false;
 input bool BEAST_push = false;
 input bool BEAST_mail = false;
 input int BEAST_arrow = 50;
-input string FOREXENTRYPOINT_SETTINGS = "/////////////////";
-input int FOREXENTRYPOINT_KPeriod = 21;
-input int FOREXENTRYPOINT_DPeriod = 12;
-input int FOREXENTRYPOINT_Slowing = 4;
-input int FOREXENTRYPOINT_method = 0;
-input int FOREXENTRYPOINT_price = 0;
-string FOREXENTRYPOINT_wpr = "";
-input int FOREXENTRYPOINT_WPRPerod = 14;
-input double FOREXENTRYPOINT_ZoneHighPer = 70;
-input double FOREXENTRYPOINT_ZoneLowPer = 40;
-input bool FOREXENTRYPOINT_ModeOne = true;
-input string MA_BBANDS_SETTINGS = "/////////////////";
-input int MA_BBANDS_MacdFastPeriod = 5;
-input int MA_BBANDS_MacdSlowPeriod = 9;
-input int MA_BBANDS_MacdSignal = 4;
-input int MA_BBANDS_MAPeriod = 9;
-input int MA_BBANDS_MoveShift = 0;
-input int MA_BBANDS_MAfastPeriod = 4;
-input int MA_BBANDS_Dist2 = 20;
-input double MA_BBANDS_Std = 0.4;
-input int MA_BBANDS_BPeriod = 20;
-input string SIGNALLINEARROW_SETTINGS = "/////////////////";
-input int SIGNALLINEARROW_Period = 15;
-input ENUM_MA_METHOD SIGNALLINEARROW_Method = MODE_SMA;
-input ENUM_APPLIED_PRICE SIGNALLINEARROW_Price = PRICE_CLOSE;
-bool SIGNALLINEARROW_alert = false;
-input string TRIGGERLINES_SETTINGS = "/////////////////";
+input string TRIGGERLINES_SETTINGS = "=================Triger Settings ========================";
 input int TRIGGERLINES_Rperiod = 15;
 input int TRIGGERLINES_LSMA_Period = 5;
-input string induniSett = "+++++++ Unicross Settings +++++++"; //+++++++ Unicross Settings +++++++
-
+input string induniSett = "======================= Unicross Settings =========================="; //+++++++ Unicross Settings +++++++
 input int T3Period = 14; // T3 Period
 input ENUM_APPLIED_PRICE T3Price = PRICE_CLOSE; // T3 Source
 input double B_Factor = 0.618; // T3 b Factor
@@ -422,32 +400,74 @@ input int DeltaForSell = 0; // Delta for sell signal
 input int DeltaForBuy = 0; // Delta for buy signal
 double ArrowOffset = 0.5; // Arrow vertical offset
 int Maxbars = 500; // Lookback
-input string ZIGZAG_SETTINGS = "================Zigzag Indicator Settings ==========";
-input int ZIGZAG_Depth = 62;
-input int ZIGZAG_Deviation = 15;
-input int ZIGZAG_BackStep = 9;
+input string       ZIGZAG_SETTINGS = "================Zigzag Indicator Settings ==========";
+input int          ZIGZAG_Depth = 62;
+input int          ZIGZAG_Deviation = 15;
+input int          ZIGZAG_BackStep = 9;
 
 
-input string AturNews = "==================="; // =========IN THE NEWS FILTER==========
-input bool AvoidNews = FALSE; // News Filter
-input bool CloseBeforNews = FALSE; // Close and Stop Order Before News
-int GMTplus = 3; // Your Time Zone, GMT (for news)
-input string InvestingUrl = "http://ec.forexprostools.com/?columns=exc_currency,exc_importance&importance=1,2,3&calType=week&timeZone=15&lang=1"; // Source Url Investing.Com
-input int AfterNewsStop = 60; // Stop Trading Before News Release (in Minutes)
-input int BeforeNewsStop = 60; // Start Trading After News Release (in Minutes)
-input bool NewsLight = true; // Low Impact
-input bool NewsMedium = true; // Middle News
-input bool NewsHard = true; // High Impact News
-input bool NewsTunggal = true; // Enable Keyword News
-input string judulnews = "FOMC"; // Keyword News
-int offset; // Your Time Zone, GMT (for news)
-extern string NewsSymb = "USD,EUR,GBP,CHF,CAD,AUD,NZD,JPY"; //Currency to display the news
-input bool CurrencyOnly = false; // Only the current currencies
-input bool DrawLines = true; // Draw lines on the chart
-input bool Next = false; // Draw only the future of news line
-bool Signal = false; // Signals on the upcoming news
-input string noterf = "-----< Other >-----"; //=========================================
-
+//-------------------------------------------- EXTERNAL VARIABLE ---------------------------------------------
+//------------------------------------------------------------------------------------------------------------
+extern bool    ReportActive      = false;                // Report for active chart only (override other inputs)
+extern bool    IncludeHigh       = true;                 // Include high
+extern bool    IncludeMedium     = true;                 // Include medium
+extern bool    IncludeLow        = true;                 // Include low
+extern bool    IncludeSpeaks     = true;                 // Include speaks
+extern bool    IncludeHolidays   = false;                // Include holidays
+extern string  FindKeyword       = "";                   // Find keyword
+extern string  IgnoreKeyword     = "";                   // Ignore keyword
+extern bool    AllowUpdates      = true;                 // Allow updates
+extern int     UpdateHour        = 4;                    // Update every (in hours)
+input string   lb_0              = "";                   // ------------------------------------------------------------
+input string   lb_1              = "";                   // ------> PANEL SETTINGS
+extern bool    ShowPanel         = true;                 // Show panel
+bool            AllowSubwindow    = false;                // Show Panel in sub window
+extern ENUM_BASE_CORNER Corner   = 2;                    // Panel side
+extern string  PanelTitle="Forex Calendar @ Forex Factory"; // Panel title
+extern color   TitleColor        = C'46,188,46';         // Title color
+extern bool    ShowPanelBG       = true;                 // Show panel backgroud
+extern color   Pbgc              = C'25,25,25';          // Panel backgroud color
+extern color   LowImpactColor    = C'91,192,222';        // Low impact color
+extern color   MediumImpactColor = C'255,185,83';        // Medium impact color
+extern color   HighImpactColor   = C'217,83,79';         // High impact color
+extern color   HolidayColor      = clrOrchid;            // Holidays color
+extern color   RemarksColor      = clrGray;              // Remarks color
+extern color   PreviousColor     = C'170,170,170';       // Forecast color
+extern color   PositiveColor     = C'46,188,46';         // Positive forecast color
+extern color   NegativeColor     = clrTomato;            // Negative forecast color
+extern bool    ShowVerticalNews  = true;                 // Show vertical lines
+extern int     ChartTimeOffset   = 0;                    // Chart time offset (in hours)
+extern int     EventDisplay      = 10;                   // Hide event after (in minutes)
+input string   lb_2              = "";                   // ------------------------------------------------------------
+input string   lb_3              = "";                   // ------> SYMBOL SETTINGS
+extern bool    ReportForUSD      = true;                 // Report for USD
+extern bool    ReportForEUR      = true;                 // Report for EUR
+extern bool    ReportForGBP      = true;                 // Report for GBP
+extern bool    ReportForNZD      = true;                 // Report for NZD
+extern bool    ReportForJPY      = true;                 // Report for JPY
+extern bool    ReportForAUD      = true;                 // Report for AUD
+extern bool    ReportForCHF      = true;                 // Report for CHF
+extern bool    ReportForCAD      = true;                 // Report for CAD
+extern bool    ReportForCNY      = false;                // Report for CNY
+input string   lb_4              = "";                   // ------------------------------------------------------------
+input string   lb_5              = "";                   // ------> INFO SETTINGS
+extern bool    ShowInfo          = true;                 // Show Symbol info ( Strength / Bar Time / Spread )
+extern color   InfoColor         = C'255,185,83';        // Info color
+extern int     InfoFontSize      = 8;                    // Info font size
+input string   lb_6              = "";                   // ------------------------------------------------------------
+input string   lb_7              = "";                   // ------> NOTIFICATION
+input string   lb_8              = "";                   // *Note: Set (-1) to disable the Alert
+extern int     Alert1Minutes     = 30;                   // Minutes before first Alert
+extern int     Alert2Minutes     = -1;                   // Minutes before second Alert
+extern bool    PopupAlerts       = false;                // Popup Alerts
+extern bool    SoundAlerts       = true;                 // Sound Alerts
+extern string  AlertSoundFile    = "news.wav";           // Sound file name
+extern bool    EmailAlerts       = false;                // Send email
+extern bool    NotificationAlerts= false;                // Send push notification
+input bool     AvoidNews         = FALSE;                // News Filter
+input bool     CloseBeforNews    = FALSE;                // Close and Stop Order Before News
+input int      AfterNewsStop     = 60;                   // Stop Trading Before News Release (in Minutes)
+input int      BeforeNewsStop    = 60;                   // Start Trading After News Release (in Minutes)
 
 //input bool     snr           = TRUE;           //Use Support & Resistance
 periodtf snrperiod = D1; //Support & Resistance Time Frame
@@ -562,6 +582,32 @@ int exit2[];
 string cc0 = "";
 bool MaxSellExceed=false;
 bool MaxBuyExceed=false;
+datetime startTime=0;
+datetime lastorder_close=0;
+string PriceRowLeftArr[]= {"Bid","Low","Open","Pivot"};
+string PriceRowRightArr[]= {"Ask","High","Open","Pivot"};
+
+//news
+//--- Vars and arrays
+string xmlFileName;
+string sData;
+string Event[200][7];
+string eTitle[10],eCountry[10],eImpact[10],eForecast[10],ePrevious[10];
+int eMinutes[10];
+datetime eTime[10];
+double MinuteBuffer[200];
+double ImpactBuffer[200];
+int anchor,x0,x1,x2,xf,xp;
+int Factor;
+//--- Alert
+bool FirstAlert;
+bool SecondAlert;
+datetime AlertTime;
+//--- time
+datetime xmlModifed;
+int TimeOfDay;
+datetime Midnight;
+bool IsEvent;
 
 // Class object
 CExecute *trades[];
@@ -572,6 +618,8 @@ COrder *Pendings[];
 COrder *SellPendings[];
 COrder *BuyPendings[];
 CUtilities *tools[];
+CHistoryPosition *Hist[];
+
 
 //telegram bot class
 //+------------------------------------------------------------------+
@@ -600,13 +648,88 @@ public:
   };
 CMyBot bot;
 int getme_result;
-datetime lastopentime=0;
-datetime lastclosetime=0;
+
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
 int OnInit()
   {
+//--- check for DLL
+   if(!TerminalInfoInteger(TERMINAL_DLLS_ALLOWED))
+     {
+      Alert(INAME+": Please Allow DLL Imports!");
+      return(INIT_FAILED);
+     }
+//--- 4/5 digit brokers
+   if(Digits%2==1)
+      Factor=10;
+   else
+      Factor=1;
+//--- get today time
+   TimeOfDay=(int)TimeLocal()%86400;
+   Midnight=TimeLocal()-TimeOfDay;
+//--- set xml file name ffcal_week_this (fixed name)
+   xmlFileName=INAME+"-ffcal_week_this.xml";
+//--- checks the existence of the file.
+   if(!FileIsExist(xmlFileName))
+     {
+      xmlDownload();
+      xmlRead();
+     }
+//--- else just read it
+   else
+      xmlRead();
+//--- get last modification time
+   xmlModifed=(datetime)FileGetInteger(xmlFileName,FILE_MODIFY_DATE,false);
+//--- check for updates
+   if(AllowUpdates)
+     {
+      if(xmlModifed<TimeLocal()-(UpdateHour*3600))
+        {
+         Print(INAME+": xml file is out of date");
+         xmlUpdate();
+        }
+      //--- set timer to update old xml file every x hours
+      else
+         EventSetTimer(UpdateHour*3600);
+     }
+//--- set panel corner
+   switch(Corner)
+     {
+      case CORNER_LEFT_UPPER:
+         x0=5;
+         x1=165;
+         x2=15;
+         xf=340;
+         xp=390;
+         anchor=0;
+         break;
+      case CORNER_RIGHT_UPPER:
+         x0=455;
+         x1=265;
+         x2=440;
+         xf=110;
+         xp=60;
+         anchor=0;
+         break;
+      case CORNER_RIGHT_LOWER:
+         x0=455;
+         x1=265;
+         x2=440;
+         xf=110;
+         xp=60;
+         anchor=2;
+         break;
+      case CORNER_LEFT_LOWER:
+         x0=5;
+         x1=165;
+         x2=15;
+         xf=340;
+         xp=390;
+         anchor=2;
+         break;
+     }
+
    if(useTel)
      {
       //--- set token
@@ -614,7 +737,7 @@ int OnInit()
       //--- check token
       getme_result = bot.GetMe();
      }
-
+   startTime=TimeCurrent();
 //--- Disclaimer
    if(!GlobalVariableCheck(OBJPREFIX+"Disclaimer") || GlobalVariableGet(OBJPREFIX+"Disclaimer") != 1)
      {
@@ -751,6 +874,7 @@ int OnInit()
       ArrayResize(Signal4,size,size);
       ArrayResize(exit1,size,size);
       ArrayResize(exit2,size,size);
+      ArrayResize(Hist,size,size);
       for(int i = 0; i < size; i++)
         {
          Symbols[i] = Prefix+Symbols[i]+Suffix;
@@ -768,6 +892,7 @@ int OnInit()
          Pendings[i]=new COrder(Symbols[i],magic_Number,GROUP_ORDERS_ALL);
          BuyPendings[i]=new COrder(Symbols[i],magic_Number,GROUP_ORDERS_BUY_STOP);
          SellPendings[i]=new COrder(Symbols[i],magic_Number,GROUP_ORDERS_SELL_STOP);
+         Hist[i]=new CHistoryPosition(Symbols[i],magic_Number,GROUP_HISTORY_POSITIONS_ALL);
          tools[i] = new CUtilities(Symbols[i]);
          MasterSignal[i]=0;
          Signal2[i]=0;
@@ -924,7 +1049,73 @@ int OnInit()
            }
         }
      }
+   int size = ArraySize(Symbols);
+// loop on all symbols
+   for(int i = 0; i < size; i++)
+     {
+      // Delete Pending Orders After  Bars
+      if(delete_Pending&&Bars_to_Delete_Pending>0)
+         DeletePeblndingWithCandle(Pendings[i]);
 
+      int mainSignal = 0;
+      bool change=false;
+      bool exitchange=false;
+      if(indikator1 != off)
+        {
+         int m=initialSignal(indikator1, timeframe1, comment1, shift1, Symbols[i]);
+         if(m!=MasterSignal[i]&&m!=0)
+           {
+            MasterSignal[i] = m;
+            Print(MasterSignal[i]);
+            change=true;
+           }
+        }
+      if(indikator2 != off)
+        {
+         int s2=initialSignal(indikator2, timeframe2, comment2, shift2, Symbols[i]);
+         if(s2!=Signal2[i]&&s2!=0)
+           {
+            Signal2[i] = s2;
+            change=true;
+           }
+        }
+      if(indikator3 != off)
+        {
+         int s3=initialSignal(indikator3, timeframe3, comment3, shift3, Symbols[i]);
+         if(s3!=Signal3[i]&&s3!=0)
+           {
+            Signal3[i] =s3;
+            change=true;
+           }
+        }
+      if(indikator4 != off)
+        {
+         int s4=initialSignal(indikator4, timeframe4, comment4, shift4, Symbols[i]);
+         if(s4!=Signal4[i]&&s4!=0)
+           {
+            Signal4[i] = s4;
+            change=true;
+           }
+        }
+      if(indikator1x != off)
+        {
+         int x1=initialSignal(indikator1x, timeframe1x, comment, 0, Symbols[i]);
+         if(x1!=0&&x1!=exit1[i])
+           {
+            exit1[i] = x1;
+            exitchange=true;
+           }
+        }
+      if(indikator2x != off)
+        {
+         int x2=initialSignal(indikator2x, timeframe2x, comment4, 0, Symbols[i]);
+         if(x2!=0&&x2!=exit2[i])
+           {
+            exit2[i] =x2 ;
+            exitchange=true;
+           }
+        }
+     }
    cc0 = "Started Successfuly!";
 //---
    return(INIT_SUCCEEDED);
@@ -935,7 +1126,16 @@ int OnInit()
 void OnDeinit(const int reason)
   {
 //--- destroy timer
-   EventKillTimer();
+
+   for(int i=ObjectsTotal(); i>=0; i--)
+     {
+      string name=ObjectName(i);
+      if(StringFind(name,INAME)==0)
+         ObjectDelete(name);
+     }
+//--- Kill update timer only if removed
+   if(reason==1)
+      EventKillTimer();
 
   }
 //+------------------------------------------------------------------+
@@ -1182,49 +1382,65 @@ void OnTick()
            {
             if(close_Strategy == singleClose)
               {
-               if(exit1[i] > 0 && mainSignal < 0)
+               if(exit1[i] > 0)
                  {
                   BuyPositions[i].GroupCloseAll(30);
                   BuyPendings[i].GroupCloseAll(30);
-                  
-                  cc0="Sell Order Closed Buy "+Get_Strategy(1)+"on "+Symbols[i]+" @ "+(string)tools[i].Bid()+" Time: "+ TimeToString(TimeCurrent(),TIME_MINUTES)+" Date: "+ TimeToString(TimeCurrent(),TIME_DATE);
-
+                  CloseSignal(i,0);
                  }
-               if(exit1[i] < 0 && mainSignal > 0)
+               if(exit1[i] < 0)
                  {
                   SellPositions[i].GroupCloseAll(30);
                   SellPendings[i].GroupCloseAll(30);
+                  CloseSignal(i,1);
                  }
               }
-            if(close_Strategy == joinClose)
+           }
+         if(close_Strategy == joinClose)
+           {
+            if(exit1[i] > 0 && exit2[i] > 0)
               {
-               if(exit1[i] > 0 && exit2[i] > 0 && mainSignal < 0)
-                 {
-                  BuyPositions[i].GroupCloseAll(30);
-                  BuyPendings[i].GroupCloseAll(30);
-                 }
-               if(exit1[i] < 0 && exit2[i] < 0 && mainSignal > 0)
-                 {
-                  SellPositions[i].GroupCloseAll(30);
-                  SellPendings[i].GroupCloseAll(30);
-                 }
+               BuyPositions[i].GroupCloseAll(30);
+               BuyPendings[i].GroupCloseAll(30);
+               CloseSignal(i,0);
               }
+            if(exit1[i] < 0 && exit2[i] < 0)
+              {
+               SellPositions[i].GroupCloseAll(30);
+               SellPendings[i].GroupCloseAll(30);
+               CloseSignal(i,0);
+              }
+
            }
 
 
         }
 
      }
+   NewsFeed();
+   if(UsePartialClose)
+     {
+      CheckPartialClose();
+     }
+   if(UseTrailingStop)
+     {
+      checkTrail();
+     }
+   if(UseBreakEven)
+     {
+      _funcBE();
+     }
+
 //---
    if(ShowDashboard)
      {
       //---
       ObjectsCreateAll();
       //---
-      for(int i=0; i<ArraySize(aSymbols); i++)
+      for(int i=0; i<ArraySize(Symbols); i++)
         {
-         ObjectsUpdateAll(Prefix+aSymbols[i]+Suffix);
-         GetSetInputs(Prefix+aSymbols[i]+Suffix);
+         ObjectsUpdateAll(Symbols[i]);
+         GetSetInputs(Symbols[i]);
         }
       //---
       GetSetInputsA();
@@ -1292,30 +1508,470 @@ void OnTick()
 //+------------------------------------------------------------------+
 void OnTimer()
   {
+   Print(INAME+": xml file is out of date");
+   xmlUpdate();
+  }
 
+//+------------------------------------------------------------------+
+//| ChartEvent function                                              |
+//+------------------------------------------------------------------+
+void OnChartEvent(const int id,
+                  const long &lparam,
+                  const double &dparam,
+                  const string &sparam)
+  {
+//----
+   if(id==CHARTEVENT_KEYDOWN)
+     {
+
+      //---
+      if(KeyboardTrading)
+        {
+
+
+         //--- Switch Symbol (UP)
+         if(lparam==KEY_UP)
+           {
+            //---
+            int index=0;
+            //---
+            for(int i=0; i<ArraySize(Symbols); i++)
+              {
+               if(_Symbol==Symbols[i])
+                 {
+                  //---
+                  index=i-1;
+                  //---
+                  if(index<0)
+                     index=ArraySize(Symbols)-1;
+                  //---
+                  if(SymbolFind(Symbols[index],false))
+                    {
+                     ChartSetSymbolPeriod(0,Symbols[index],PERIOD_CURRENT);
+                     SetStatus("ÿ","Switched to "+Symbols[index]);
+                     break;
+                    }
+                 }
+              }
+           }
+
+         //--- Switch Symbol (DOWN)
+         if(lparam==KEY_DOWN)
+           {
+            //---
+            int index=0;
+            //---
+            for(int i=0; i<ArraySize(Symbols); i++)
+              {
+               //---
+               if(_Symbol==Symbols[i])
+                 {
+                  //---
+                  index=i+1;
+                  //---
+                  if(index>=ArraySize(Symbols))
+                     index=0;
+                  //---
+                  if(SymbolFind(Symbols[index],false))
+                    {
+                     ChartSetSymbolPeriod(0,Symbols[index],PERIOD_CURRENT);
+                     SetStatus("ÿ","Switched to "+Symbols[index]);
+                     break;
+                    }
+                 }
+              }
+           }
+        }
+     }
+
+//--- OBJ_CLICKS
+   if(id==CHARTEVENT_OBJECT_CLICK)
+     {
+
+
+      //---
+      for(int i=0; i<ArraySize(Symbols); i++)
+        {
+
+         //--- SymoblSwitcher
+         if(sparam==OBJPREFIX+Symbols[i])
+           {
+            ChartSetSymbolPeriod(0,Symbols[i],PERIOD_CURRENT);
+            SetStatus("ÿ","Switched to "+Symbols[i]);
+            break;
+           }
+        }
+
+      //--- RemoveExpert
+      if(sparam==OBJPREFIX+"EXIT")
+        {
+         //---
+         if(MessageBox("Are you sure you want to exit?",MB_CAPTION,MB_ICONQUESTION|MB_YESNO)==IDYES)
+            ExpertRemove();//Exit
+        }
+
+      //--- Minimize
+      if(sparam==OBJPREFIX+"MINIMIZE")
+        {
+         ObjectsDeleteAll(0,OBJPREFIX,-1,-1);
+         CreateMinWindow();
+         ShowDashboard=false;
+         ChartMouseScrollSet(true);
+         ChartSetColor(2);
+         ClearedTemplate=false;
+        }
+
+      //--- Maximize
+      if(sparam==OBJPREFIX+"MIN"+"MAXIMIZE")
+        {
+         DelteMinWindow();
+         ObjectsCreateAll();
+         ShowDashboard=true;
+         ChartMouseScrollSet(false);
+        }
+
+      //--- Ping
+      if(sparam==OBJPREFIX+"CONNECTION")
+        {
+         //---
+         double Ping=TerminalInfoInteger(TERMINAL_PING_LAST);//SetPingToMs
+         //---
+         if(TerminalInfoInteger(TERMINAL_CONNECTED))
+            SetStatus("\n","Ping: "+DoubleToString(Ping/1000,2)+" ms");
+         else
+            SetStatus("ý","No Internet connection...");
+        }
+
+
+      //--- SwitchTheme
+      if(sparam==OBJPREFIX+"THEME")
+        {
+         //---
+         if(SelectedTheme==0)
+           {
+            ObjectsDeleteAll(0,OBJPREFIX,-1,-1);
+            COLOR_BG=C'28,28,28';
+            COLOR_FONT=clrSilver;
+            COLOR_GREEN=clrLimeGreen;
+            COLOR_RED=clrRed;
+            COLOR_LOW=clrYellow;
+            COLOR_MARKER=clrGold;
+            ObjectsCreateAll();
+            SelectedTheme=1;
+            //---
+            SetStatus("ÿ","Dark theme selected...");
+            Sleep(250);
+            ResetStatus();
+           }
+         else
+           {
+            ObjectsDeleteAll(0,OBJPREFIX,-1,-1);
+            COLOR_BG=C'240,240,240';
+            COLOR_FONT=C'40,41,59';
+            COLOR_GREEN=clrForestGreen;
+            COLOR_RED=clrIndianRed;
+            COLOR_LOW=clrGoldenrod;
+            COLOR_MARKER=clrDarkOrange;
+            ObjectsCreateAll();
+            SelectedTheme=0;
+            //---
+            SetStatus("ÿ","Light theme selected...");
+            Sleep(250);
+            ResetStatus();
+           }
+        }
+
+      //--- SwitchTheme
+      if(sparam==OBJPREFIX+"TEMPLATE")
+        {
+         //---
+         if(!ClearedTemplate)
+           {
+            //---
+            if(SelectedTheme==0)
+              {
+               ChartSetColor(0);
+               ClearedTemplate=true;
+               SetStatus("ÿ","Chart color cleared...");
+              }
+            else
+              {
+               ChartSetColor(1);
+               ClearedTemplate=true;
+               SetStatus("ÿ","Chart color cleared...");
+              }
+           }
+         else
+           {
+            ChartSetColor(2);
+            ClearedTemplate=false;
+            SetStatus("ÿ","Original chart color applied...");
+           }
+        }
+
+      //--- GetParameters
+      GetParam(sparam);
+
+      //--- SoundManagement
+      if(sparam==OBJPREFIX+"SOUND" || sparam==OBJPREFIX+"SOUNDIO")
+        {
+         //--- EnableSound
+         if(!SoundIsEnabled)
+           {
+            SoundIsEnabled=true;
+            ObjectSetInteger(0,OBJPREFIX+"SOUNDIO",OBJPROP_COLOR,C'59,41,40');//SetObject
+            SetStatus("þ","Sounds enabled...");
+            PlaySound("sound.wav");
+           }
+         //--- DisableSound
+         else
+           {
+            SoundIsEnabled=false;
+            ObjectSetInteger(0,OBJPREFIX+"SOUNDIO",OBJPROP_COLOR,clrNONE);//SetObject
+            SetStatus("ý","Sounds disabled...");
+           }
+        }
+      //--- AlarmManagement
+      if(sparam==OBJPREFIX+"ALARM" || sparam==OBJPREFIX+"ALARMIO")
+        {
+         //--- EnableSound
+         if(!AlarmIsEnabled)
+           {
+            //---
+            AlarmIsEnabled=true;
+            //---
+            ObjectSetInteger(0,OBJPREFIX+"ALARMIO",OBJPROP_COLOR,clrNONE);
+            //---
+            string message="\n";
+
+            //---
+            Alert("Alerts enabled "+message);
+            SetStatus("þ","Alerts enabled...");
+           }
+         //--- DisableSound
+         else
+           {
+            //---
+            AlarmIsEnabled=false;
+            ObjectSetInteger(0,OBJPREFIX+"ALARMIO",OBJPROP_COLOR,C'59,41,40');
+            //---
+            SetStatus("ý","Alerts disabled...");
+           }
+        }
+
+      //--- Balance
+      if(sparam==OBJPREFIX+"BALANCE«")
+        {
+         //---
+         string text="";
+         //---
+         if(_AccountCurrency()=="$" || _AccountCurrency()=="£")
+            text=_AccountCurrency()+DoubleToString(AccountInfoDouble(ACCOUNT_EQUITY),2);
+         else
+            text=DoubleToString(AccountInfoDouble(ACCOUNT_EQUITY),2)+_AccountCurrency();
+         //---
+         SetStatus("","Equity: "+text);
+        }
+
+
+
+      //--- Switch PriceRow Left
+      if(sparam==OBJPREFIX+"PRICEROW_Lª")
+        {
+         //---
+         PriceRowLeft++;
+         //---
+         if(PriceRowLeft>=ArraySize(PriceRowLeftArr))//Reset
+            PriceRowLeft=0;
+         //---
+         ObjectSetString(0,OBJPREFIX+"PRICEROW_Lª",OBJPROP_TEXT,0,PriceRowLeftArr[PriceRowLeft]);/*SetObject*/
+         //---
+         SetStatus("É","Switched to "+PriceRowLeftArr[PriceRowLeft]+" mode...");
+         //---
+         for(int i=0; i<ArraySize(Symbols); i++)
+            ObjectSetString(0,OBJPREFIX+"PRICEROW_L"+" - "+Symbols[i],OBJPROP_TOOLTIP,PriceRowLeftArr[PriceRowLeft]+" "+Symbols[i]);
+        }
+
+      //--- Switch PriceRow Right
+      if(sparam==OBJPREFIX+"PRICEROW_Rª")
+        {
+         //---
+         PriceRowRight++;
+         //---
+         if(PriceRowRight>=ArraySize(PriceRowRightArr))//Reset
+            PriceRowRight=0;
+         //---
+         ObjectSetString(0,OBJPREFIX+"PRICEROW_Rª",OBJPROP_TEXT,0,PriceRowRightArr[PriceRowRight]);/*SetObject*/
+         //---
+         SetStatus("Ê","Switched to "+PriceRowRightArr[PriceRowRight]+" mode...");
+         //---
+         for(int i=0; i<ArraySize(Symbols); i++)
+            ObjectSetString(0,OBJPREFIX+"PRICEROW_R"+" - "+Symbols[i],OBJPROP_TOOLTIP,PriceRowRightArr[PriceRowRight]+" "+Symbols[i]);
+        }
+      if(sparam==OBJPREFIX+"PRICEROW_Rª")
+        {
+         //---
+         PriceRowRight++;
+         //---
+         if(PriceRowRight>=ArraySize(PriceRowRightArr))//Reset
+            PriceRowRight=0;
+         //---
+         ObjectSetString(0,OBJPREFIX+"PRICEROW_Rª",OBJPROP_TEXT,0,PriceRowRightArr[PriceRowRight]);/*SetObject*/
+         //---
+         SetStatus("Ê","Switched to "+PriceRowRightArr[PriceRowRight]+" mode...");
+         //---
+         for(int i=0; i<ArraySize(Symbols); i++)
+            ObjectSetString(0,OBJPREFIX+"PRICEROW_R"+" - "+Symbols[i],OBJPROP_TOOLTIP,PriceRowRightArr[PriceRowRight]+" "+Symbols[i]);
+        }
+
+
+     }
+
+//----
   }
 //+------------------------------------------------------------------+
 
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-int gmtoffset()
+void NewsFeed()
   {
-   int gmthour;
-   int gmtminute;
-   datetime timegmt; // Gmt time
-   datetime timecurrent; // Current time
-   int gmtoffset = 0;
-   timegmt = TimeGMT();
-   timecurrent = TimeCurrent();
-   gmthour = (int)StringToInteger(StringSubstr(TimeToStr(timegmt), 11, 2));
-   gmtminute = (int)StringToInteger(StringSubstr(TimeToStr(timegmt), 14, 2));
-   gmtoffset = TimeHour(timecurrent)-gmthour;
-   if(gmtoffset < 0)
-      gmtoffset = 24+gmtoffset;
-   return(gmtoffset);
-  }
+   string sTags[7]= {"<title>","<country>","<date><![CDATA[","<time><![CDATA[","<impact><![CDATA[","<forecast><![CDATA[","<previous><![CDATA["};
+   string eTags[7]= {"</title>","</country>","]]></date>","]]></time>","]]></impact>","]]></forecast>","]]></previous>"};
+   int index=0;
+   int next=-1;
+   int BoEvent=0,begin=0,end=0;
+   string myEvent="";
+//--- Minutes calculation
+   datetime EventTime=0;
+   int EventMinute=0;
+//--- split the currencies into the two parts
+   string MainSymbol=StringSubstr(Symbol(),0,3);
+   string SecondSymbol=StringSubstr(Symbol(),3,3);
+//--- loop to get the data from xml tags
+   while(true)
+     {
+      BoEvent=StringFind(sData,"<event>",BoEvent);
+      if(BoEvent==-1)
+         break;
+      BoEvent+=7;
+      next=StringFind(sData,"</event>",BoEvent);
+      if(next == -1)
+         break;
+      myEvent = StringSubstr(sData,BoEvent,next-BoEvent);
+      BoEvent = next;
+      begin=0;
+      for(int i=0; i<7; i++)
+        {
+         Event[index][i]="";
+         next=StringFind(myEvent,sTags[i],begin);
+         //--- Within this event, if tag not found, then it must be missing; skip it
+         if(next==-1)
+            continue;
+         else
+           {
+            //--- We must have found the sTag okay...
+            //--- Advance past the start tag
+            begin=next+StringLen(sTags[i]);
+            end=StringFind(myEvent,eTags[i],begin);
+            //---Find start of end tag and Get data between start and end tag
+            if(end>begin && end!=-1)
+               Event[index][i]=StringSubstr(myEvent,begin,end-begin);
+           }
+        }
+      //--- filters that define whether we want to skip this particular currencies or events
+      if(ReportActive && MainSymbol!=Event[index][COUNTRY] && SecondSymbol!=Event[index][COUNTRY])
+         continue;
+      if(!IsCurrency(Event[index][COUNTRY]))
+         continue;
+      if(!IncludeHigh && Event[index][IMPACT]=="High")
+         continue;
+      if(!IncludeMedium && Event[index][IMPACT]=="Medium")
+         continue;
+      if(!IncludeLow && Event[index][IMPACT]=="Low")
+         continue;
+      if(!IncludeSpeaks && StringFind(Event[index][TITLE],"Speaks")!=-1)
+         continue;
+      if(!IncludeHolidays && Event[index][IMPACT]=="Holiday")
+         continue;
+      if(Event[index][TIME]=="All Day" ||
+         Event[index][TIME]=="Tentative" ||
+         Event[index][TIME]=="")
+         continue;
+      if(FindKeyword!="")
+        {
+         if(StringFind(Event[index][TITLE],FindKeyword)==-1)
+            continue;
+        }
+      if(IgnoreKeyword!="")
+        {
+         if(StringFind(Event[index][TITLE],IgnoreKeyword)!=-1)
+            continue;
+        }
+      //--- sometimes they forget to remove the tags :)
+      if(StringFind(Event[index][TITLE],"<![CDATA[")!=-1)
+         StringReplace(Event[index][TITLE],"<![CDATA[","");
+      if(StringFind(Event[index][TITLE],"]]>")!=-1)
+         StringReplace(Event[index][TITLE],"]]>","");
+      if(StringFind(Event[index][TITLE],"]]>")!=-1)
+         StringReplace(Event[index][TITLE],"]]>","");
+      //---
+      if(StringFind(Event[index][FORECAST],"&lt;")!=-1)
+         StringReplace(Event[index][FORECAST],"&lt;","");
+      if(StringFind(Event[index][PREVIOUS],"&lt;")!=-1)
+         StringReplace(Event[index][PREVIOUS],"&lt;","");
 
+      //--- set some values (dashes) if empty
+      if(Event[index][FORECAST]=="")
+         Event[index][FORECAST]="---";
+      if(Event[index][PREVIOUS]=="")
+         Event[index][PREVIOUS]="---";
+      //--- Convert Event time to MT4 time
+      EventTime=datetime(MakeDateTime(Event[index][DATE],Event[index][TIME]));
+      //--- calculate how many minutes before the event (may be negative)
+      EventMinute=int(EventTime-TimeGMT())/60;
+      //--- only Alert once
+      if(EventMinute==0 && AlertTime!=EventTime)
+        {
+         FirstAlert =false;
+         SecondAlert=false;
+         AlertTime=EventTime;
+        }
+      //--- Remove the event after x minutes
+      if(EventMinute+EventDisplay<0)
+         continue;
+      //--- Set buffers
+      index++;
+     }
+//--- loop to set arrays/buffers that uses to draw objects and alert
+   for(int i=0; i<index; i++)
+     {
+      for(int n=i; n<10; n++)
+        {
+         eTitle[n]    = Event[i][TITLE];
+         eCountry[n]  = Event[i][COUNTRY];
+         eImpact[n]   = Event[i][IMPACT];
+         eForecast[n] = Event[i][FORECAST];
+         ePrevious[n] = Event[i][PREVIOUS];
+         eTime[n]     = datetime(MakeDateTime(Event[i][DATE],Event[i][TIME]))-TimeGMTOffset();
+         eMinutes[n]  = (int)(eTime[n]-TimeLocal())/60;
+         MinuteBuffer[index]=EventMinute;
+         ImpactBuffer[index]=ImpactToNumber(Event[index][IMPACT]);
+         //--- Check if there are any events
+         if(ObjectFind(eTitle[n])!=0)
+            IsEvent=true;
+        }
+     }
+//--- check then call draw / alert function
+   if(IsEvent)
+      DrawEvents();
+   else
+      Draw("no more events","NO MORE EVENTS",14,"Arial Black",RemarksColor,2,10,30,"Get some rest!");
+//--- call info function
+   if(ShowInfo)
+      SymbolInfo();
+
+  }
 
 
 //+------------------------------------------------------------------+
@@ -1390,8 +2046,171 @@ int GetIndicatorsSignal(indi indicator, ENUM_TIMEFRAMES period, string cmnt, int
    return signal;
   }
 // dashboard functions
+int initialSignal(indi indicator, ENUM_TIMEFRAMES period, string cmnt, int shift, string symbol)
+  {
+   int signal = 0;
+   double buy = 0,
+          sell = 0;
+
+   if(indicator == beast)
+     {
+      for(int x=0; x<500; x++)
+        {
+         buy = iCustom(symbol, period, "1BeastSuperSignal.ex4", BEAST_Depth, BEAST_Deviation, BEAST_BackStep, BEAST_StochasticLen, BEAST_StochasticFilter, BEAST_OverBoughtLevel, BEAST_OverSoldLevel, BEAST_MATrendLinePeriod, BEAST_MATrendLineMethod, BEAST_MATrendLinePrice, BEAST_MAPerod, BEAST_MAShift, BEAST_MAMethod, BEAST_MAPrice, BEAST_alert, BEAST_push, BEAST_mail, BEAST_arrow, 0, x);
+         if(ValidateBuffer(buy))
+           {
+            signal = 1;
+            break;
+           }
+         sell = iCustom(symbol, period, "1BeastSuperSignal.ex4", BEAST_Depth, BEAST_Deviation, BEAST_BackStep, BEAST_StochasticLen, BEAST_StochasticFilter, BEAST_OverBoughtLevel, BEAST_OverSoldLevel, BEAST_MATrendLinePeriod, BEAST_MATrendLineMethod, BEAST_MATrendLinePrice, BEAST_MAPerod, BEAST_MAShift, BEAST_MAMethod, BEAST_MAPrice, BEAST_alert, BEAST_push, BEAST_mail, BEAST_arrow, 1, x);
+         if(ValidateBuffer(sell))
+           {
+            signal = -1;
+            break;
+           }
+        }
+     }
+
+   if(indicator == triger)
+     {
+      for(int x=0; x<500; x++)
+        {
+         double buff0_1 = iCustom(symbol, period, "1Triggerlines.ex4", TRIGGERLINES_Rperiod, TRIGGERLINES_LSMA_Period, 0, x);
+         double buff2_1 = iCustom(symbol, period, "1Triggerlines.ex4", TRIGGERLINES_Rperiod, TRIGGERLINES_LSMA_Period, 2, x);
+         double buff0_2 = iCustom(symbol, period, "1Triggerlines.ex4", TRIGGERLINES_Rperiod, TRIGGERLINES_LSMA_Period, 0, x+1);
+         double buff2_2 = iCustom(symbol, period, "1Triggerlines.ex4", TRIGGERLINES_Rperiod, TRIGGERLINES_LSMA_Period, 2, x+1);
+         if(ValidateBuffer(buff0_1) && ValidateBuffer(buff2_1) && ValidateBuffer(buff0_2) && !ValidateBuffer(buff2_2))
+           {
+            signal = 1;
+            break;
+           }
+         if(ValidateBuffer(buff0_1) && !ValidateBuffer(buff2_1) && ValidateBuffer(buff0_2) && ValidateBuffer(buff2_2))
+           {
+            signal = -1;
+            break;
+           }
+        }
+     }
 
 //+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+   if(indicator == uni)
+     {
+      for(int x=0; x<500; x++)
+        {
+         buy = iCustom(symbol, period, "127031_uni_cross.ex4", UseSound, TypeChart, UseAlert, NameFileSound, T3Period, T3Price, B_Factor, Snake_HalfCycle, Inverse, DeltaForSell, DeltaForBuy, ArrowOffset, Maxbars, 0, x);
+         if(ValidateBuffer(buy))
+           {
+            signal = 1;
+            break;
+           }
+         sell = iCustom(symbol, period, "127031_uni_cross.ex4", UseSound, TypeChart, UseAlert, NameFileSound, T3Period, T3Price, B_Factor, Snake_HalfCycle, Inverse, DeltaForSell, DeltaForBuy, ArrowOffset, Maxbars, 1, x);
+         if(ValidateBuffer(sell))
+           {
+            signal = -1;
+            break;
+           }
+        }
+     }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+   if(indicator == zigzag)
+     {
+      for(int x=0; x<500; x++)
+        {
+         buy = iCustom(symbol, period, "1ZigZagSignal.ex4", ZIGZAG_Depth, ZIGZAG_Deviation, ZIGZAG_BackStep, 0, x);
+         if(ValidateBuffer(buy))
+           {
+            signal = 1;
+            break;
+           }
+         sell = iCustom(symbol, period, "1ZigZagSignal.ex4", ZIGZAG_Depth, ZIGZAG_Deviation, ZIGZAG_BackStep, 1, x);
+         if(ValidateBuffer(sell))
+           {
+            signal = -1;
+            break;
+           }
+        }
+     }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+   if(indicator == HMA)
+     {
+      for(int x=0; x<500; x++)
+        {
+         buy = iCustom(symbol, period, "HMA_nrp_alerts_m_arrows.ex4", 3, x);
+         if(ValidateBuffer(buy))
+           {
+            signal = 1;
+            break;
+           }
+         sell = iCustom(symbol, period, "HMA_nrp_alerts_m_arrows.ex4", 4, x);
+         if(ValidateBuffer(sell))
+           {
+            signal = -1;
+            break;
+           }
+        }
+     }
+
+// need review on chart
+   if(indicator == HMATreend)
+     {
+      for(int x=0; x<500; x++)
+        {
+         buy = iCustom(symbol, period, "hma-trend-indicator_new _build.ex4", 0, x);
+         if(ValidateBuffer(buy))
+           {
+            signal = 1;
+            break;
+           }
+         sell = iCustom(symbol, period, "hma-trend-indicator_new _build.ex4", 1, x);
+         if(ValidateBuffer(sell))
+           {
+            signal = -1;
+            break;
+           }
+        }
+     }
+   return signal;
+  }
+//+------------------------------------------------------------------+
+void CloseSignal(int i,int type)
+  {
+   string ordertype=type==0?"Buy":"Sell";
+   Hist[i].SetHistoryRange(startTime,TimeCurrent());
+   int totalHistory=Hist[i].GroupTotal();
+   datetime time=0;
+   long ticket=-1;
+   for(int zz= 0; zz<totalHistory; zz++)
+     {
+      datetime timeClose=Hist[i][zz].GetTimeClose();
+      if(timeClose>time)
+        {
+         time=timeClose;
+         ticket=Hist[i][zz].GetTicket();
+        }
+     }
+   if(totalHistory>0&&time>lastorder_close)
+     {
+      double Profit=Hist[i][ticket].GetProfit();
+      string txt="";
+      lastorder_close=time;
+      if(Profit>=0)
+        {
+         txt="Profit: ";
+        }
+      else
+        {
+         txt="Loss: ";
+        }
+      cc0=ordertype+" Order Closed Buy "+Get_Strategy(1)+"on "+Symbols[i]+" @ "+(string)Hist[i][ticket].GetPriceClose()+txt+(string)Profit+" Time: "+ TimeToString(Hist[i][ticket].GetTimeClose(),TIME_MINUTES)+" Date: "+ TimeToString(Hist[i][ticket].GetTimeClose(),TIME_DATE);
+     }
+  }
+
 
 // Function: check indicators ValidateBuffer buffer value
 bool ValidateBuffer(double value)
@@ -1511,30 +2330,30 @@ string Get_Indicator(indi indicator)
 string Get_Strategy(int type)
   {
    string txt="";
-iif(type==0)
-   switch(Strategy)
-     {
-      case     0:
-         txt ="Single Signal";
-         break;
-      case     1:
-         txt ="Seperate Signal";
-         break;
-      case    2:
-         txt ="Joint Signal";
-         break;
-     }
-     if(type==1)
-     switch(close_Strategy)
-     {
-      case     0:
-         txt ="Seperate SIGNAL ";
-         break;
-      case     1:
-         txt ="Joint Signal";
-         break;
-    
-     }
+   if(type==0)
+      switch(Strategy)
+        {
+         case     0:
+            txt ="Single Signal";
+            break;
+         case     1:
+            txt ="Seperate Signal";
+            break;
+         case    2:
+            txt ="Joint Signal";
+            break;
+        }
+   if(type==1)
+      switch(close_Strategy)
+        {
+         case     0:
+            txt ="Seperate SIGNAL ";
+            break;
+         case     1:
+            txt ="Joint Signal";
+            break;
+
+        }
    return txt;
   }
 //+------------------------------------------------------------------+
@@ -1933,7 +2752,7 @@ void ObjectsCreateAll()
    int csm_dist_b = Dpi(150);
 //---
 
-   LabelCreate(0, OBJPREFIX+"BALANCE«", 0, _x1+Dpi(300), _y1+Dpi(8), CORNER_LEFT_UPPER, Balance(), sFontType, 8, C'59, 41, 40', 0, ANCHOR_CENTER, false, false, true, 0, "Balance is :"+Balance());
+   LabelCreate(0, OBJPREFIX+"BALANCE«", 0, _x1+Dpi(200), _y1+Dpi(8), CORNER_LEFT_UPPER, Balance(), sFontType, 8, C'59, 41, 40', 0, ANCHOR_CENTER, false, false, true, 0, "Balance is :"+Balance());
    LabelCreate(0, OBJPREFIX+"Pairs", 0, _x1+Dpi(10), _y1+Dpi(30), CORNER_LEFT_UPPER, "Pairs", "Arial Black", 12, COLOR_FONT, 0, ANCHOR_LEFT, false, false, true, 0, "\n");
    LabelCreate(0, OBJPREFIX+"Master", 0, _x1+Dpi(100), _y1+Dpi(30), CORNER_LEFT_UPPER, "Master", "Arial Black", 10, COLOR_FONT, 0, ANCHOR_LEFT, false, false, true, 0, "\n");
    LabelCreate(0, OBJPREFIX+"slave 1", 0, _x1+Dpi(200), _y1+Dpi(30), CORNER_LEFT_UPPER, "Slave 1", "Arial Black", 10, COLOR_FONT, 0, ANCHOR_LEFT, false, false, true, 0, "\n");
@@ -3049,6 +3868,25 @@ void snrfibo()
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
+int gmtoffset()
+  {
+   int gmthour;
+   int gmtminute;
+   datetime timegmt; // Gmt time
+   datetime timecurrent; // Current time
+   int gmtoffset=0;
+   timegmt=TimeGMT();
+   timecurrent=TimeCurrent();
+   gmthour=(int)StringToInteger(StringSubstr(TimeToStr(timegmt),11,2));
+   gmtminute=(int)StringToInteger(StringSubstr(TimeToStr(timegmt),14,2));
+   gmtoffset=TimeHour(timecurrent)-gmthour;
+   if(gmtoffset<0)
+      gmtoffset=24+gmtoffset;
+   return(gmtoffset);
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
 void drawLabel(string A_name_0, double A_price_8, color A_color_16)
   {
    if(ObjectFind(A_name_0) != 0)
@@ -3100,4 +3938,1036 @@ void QnDeleteObject()
       ObjectDelete(oName);
      }
   }
+//+------------------------------------------------------------------+
+//+------------------------------------------------------------------+
+void  checkTrail()
+  {
+   int count=OrdersTotal();
+   double ts=0;
+   while(count>0)
+     {
+      int os=OrderSelect(count-1,MODE_TRADES);
+
+      if(OrderMagicNumber()==magic_Number)
+        {
+         //--- symbol variables
+         double pip=SymbolInfoDouble(OrderSymbol(),SYMBOL_POINT);
+         if(SymbolInfoInteger(OrderSymbol(),SYMBOL_DIGITS)==5 || SymbolInfoInteger(OrderSymbol(),SYMBOL_DIGITS)==3)
+            pip*=10;
+         int digits = (int)SymbolInfoInteger(OrderSymbol(),SYMBOL_DIGITS);
+
+         switch(OrderType())
+           {
+            default:
+               break;
+            case ORDER_TYPE_BUY:
+              {
+               switch(TrailingUnit)
+                 {
+                  default:
+                  case InDollars:
+                    {
+                     double profit_distance = OrderProfit();
+                     bool is_activated = profit_distance > TrailingStart;
+                     if(is_activated)
+                       {
+                        double steps = MathFloor((profit_distance - TrailingStart)/TrailingStep);
+                        if(steps>0)
+                          {
+                           //--- calculate stop loss distance
+                           double stop_distance = GetDistanceInPoints(OrderSymbol(),TrailingUnit,TrailingStop*steps,1,OrderLots()); //--- pip value forced to 1 because TrailingStop*steps already in points
+                           double stop_price = NormalizeDouble(OrderOpenPrice()+stop_distance,digits);
+                           //--- move stop if needed
+                           if((OrderStopLoss()==0)||(stop_price > OrderStopLoss()))
+                             {
+                              if(DebugTrailingStop)
+                                {
+                                 Print("TS[Start:$"+DoubleToString(TrailingStart,2)
+                                       +",Step:$"+DoubleToString(TrailingStep,2)
+                                       +",Stop:$"+DoubleToString(TrailingStop,2)+"]"
+                                       +" p:$"+DoubleToString(profit_distance,digits)
+                                       +" s:$"+DoubleToString(steps,digits)
+                                       +" sd:"+DoubleToString(stop_distance,digits)
+                                       +" sp:"+DoubleToString(stop_price,digits));
+                                }
+                              if(!OrderModify(OrderTicket(),OrderOpenPrice(),stop_price,OrderTakeProfit(),0,clrGold))
+                                {
+                                 Print("Failed to modify trailing stop. Order " + IntegerToString(OrderTicket()) + ", error: " + IntegerToString(GetLastError()));
+                                }
+                             }
+                          }
+                       }
+                     break;
+                    }
+                  case InPips:
+                    {
+                     double profit_distance = SymbolInfoDouble(OrderSymbol(),SYMBOL_BID) - OrderOpenPrice();
+                     bool is_activated = profit_distance > TrailingStart*pip;
+                     if(is_activated)    //--- get trailing steps
+                       {
+                        double steps = MathFloor((profit_distance - TrailingStart*pip)/(TrailingStep*pip));
+                        if(steps>0)
+                          {
+                           //--- calculate stop loss distance
+                           double stop_distance = TrailingStop*pip*steps;
+                           double stop_price = NormalizeDouble(OrderOpenPrice()+stop_distance,digits);
+                           //--- move stop if needed
+                           if((OrderStopLoss()==0)||(stop_price > OrderStopLoss()))
+                             {
+                              if(DebugTrailingStop)
+                                {
+                                 Print("TS[Start:"+DoubleToString(TrailingStart)
+                                       +",Step:"+DoubleToString(TrailingStep)
+                                       +",Stop:"+DoubleToString(TrailingStop)+"]"
+                                       +" p:"+DoubleToString(profit_distance,digits)
+                                       +" s:"+DoubleToString(steps)
+                                       +" sd:"+DoubleToString(stop_distance,digits)
+                                       +" sp:"+DoubleToString(stop_price,digits));
+                                }
+                              if(!OrderModify(OrderTicket(),OrderOpenPrice(),stop_price,OrderTakeProfit(),0,clrGold))
+                                {
+                                 Print("Failed to modify trailing stop. Order " + IntegerToString(OrderTicket()) + ", error: " + IntegerToString(GetLastError()));
+                                }
+                             }
+                          }
+                       }
+                     break;
+                    }
+                 }
+               break;
+              }
+            case ORDER_TYPE_SELL:
+              {
+               switch(TrailingUnit)
+                 {
+                  default:
+                  case InDollars:
+                    {
+                     double profit_distance = OrderProfit();
+                     bool is_activated = profit_distance > TrailingStart;
+                     if(is_activated)
+                       {
+                        double steps = MathFloor((profit_distance - TrailingStart)/TrailingStep);
+                        if(steps>0)
+                          {
+                           //--- calculate stop loss distance
+                           double stop_distance = GetDistanceInPoints(OrderSymbol(),TrailingUnit,TrailingStop*steps,1,OrderLots());//--- pip value forced to 1 because TrailingStop*steps already in points
+                           double stop_price = NormalizeDouble(OrderOpenPrice()-stop_distance,digits);
+                           //--- move stop if needed
+                           if((OrderStopLoss()==0)||(stop_price < OrderStopLoss()))
+                             {
+                              if(DebugTrailingStop)
+                                {
+                                 Print("TS[Start:$"+DoubleToString(TrailingStart,2)
+                                       +",Step:$"+DoubleToString(TrailingStep,2)
+                                       +",Stop:$"+DoubleToString(TrailingStop,2)+"]"
+                                       +" p:$"+DoubleToString(profit_distance,digits)
+                                       +" s:$"+DoubleToString(steps,digits)
+                                       +" sd:"+DoubleToString(stop_distance,digits)
+                                       +" sp:"+DoubleToString(stop_price,digits));
+                                }
+                              if(!OrderModify(OrderTicket(),OrderOpenPrice(),stop_price,OrderTakeProfit(),0,clrGold))
+                                {
+                                 Print("Failed to modify trailing stop. Order " + IntegerToString(OrderTicket()) + ", error: " + IntegerToString(GetLastError()));
+                                }
+                             }
+                          }
+                       }
+                     break;
+                    }
+                  case InPips:
+                    {
+                     double profit_distance = OrderOpenPrice() - SymbolInfoDouble(OrderSymbol(),SYMBOL_ASK);
+                     bool is_activated = profit_distance > TrailingStart*pip;
+                     if(is_activated)    //--- get trailing steps
+                       {
+                        double steps = MathFloor((profit_distance - TrailingStart*pip)/(TrailingStep*pip));
+                        if(steps>0)
+                          {
+                           //--- calculate stop loss distance
+                           double stop_distance = TrailingStop*pip*steps;
+                           double stop_price = NormalizeDouble(OrderOpenPrice()-stop_distance,digits);
+                           //--- move stop if needed
+                           if((OrderStopLoss()==0) || (stop_price < OrderStopLoss()))
+                             {
+                              if(DebugTrailingStop)
+                                {
+                                 Print("TS[Start:"+DoubleToString(TrailingStart)
+                                       +",Step:"+DoubleToString(TrailingStep)
+                                       +",Stop:"+DoubleToString(TrailingStop)+"]"
+                                       +" p:"+DoubleToString(profit_distance,digits)
+                                       +" s:"+DoubleToString(steps)
+                                       +" sd:"+DoubleToString(stop_distance,digits)
+                                       +" sp:"+DoubleToString(stop_price,digits));
+                                }
+                              if(!OrderModify(OrderTicket(),OrderOpenPrice(),stop_price,OrderTakeProfit(),0,clrGold))
+                                {
+                                 Print("Failed to modify trailing stop. Order " + IntegerToString(OrderTicket()) + ", error: " + IntegerToString(GetLastError()));
+                                }
+                             }
+                          }
+                       }
+                     break;
+                    }
+                 }
+               break;
+              }
+           }
+        }
+      count--;
+     }
+  }
+//+------------------------------------------------------------------+
+void  _funcBE()
+  {
+
+   int count=OrdersTotal();
+   double ts=0;
+   while(count>0)
+     {
+      int os=OrderSelect(count-1,MODE_TRADES);
+
+      if(OrderMagicNumber()==magic_Number)
+        {
+         //--- symbol variables
+         double pip=SymbolInfoDouble(OrderSymbol(),SYMBOL_POINT);
+         if(SymbolInfoInteger(OrderSymbol(),SYMBOL_DIGITS)==5 || SymbolInfoInteger(OrderSymbol(),SYMBOL_DIGITS)==3)
+            pip*=10;
+         int digits = (int)SymbolInfoInteger(OrderSymbol(),SYMBOL_DIGITS);
+
+         switch(OrderType())
+           {
+            default:
+               break;
+            case ORDER_TYPE_BUY:
+              {
+               switch(BreakEvenUnit)
+                 {
+                  default:
+                  case InDollars:
+                    {
+                     double profit_distance = OrderProfit();
+                     bool is_activated = profit_distance > BreakEvenTrigger;
+                     if(is_activated)
+                       {
+                        double steps = MathFloor(profit_distance / BreakEvenTrigger);
+                        if(steps>0)
+                          {
+                           //--- check current step count is within limit
+                           if(steps <= MaxNoBreakEven)
+                             {
+                              //--- calculate stop loss distance
+                              double stop_distance   = GetDistanceInPoints(OrderSymbol(),BreakEvenUnit,BreakEvenProfit*steps,1,OrderLots()); //--- pip value forced to 1 because BreakEvenProfit*steps already in points
+                              double stop_price      = NormalizeDouble(OrderOpenPrice()+stop_distance,digits);
+                              //--- move stop if needed
+                              if((OrderStopLoss()==0)||(stop_price > OrderStopLoss()))
+                                {
+                                 if(DebugBreakEven)
+                                   {
+                                    Print("BE[Trigger:$"+DoubleToString(BreakEvenTrigger,2)
+                                          +",Profit:$"+DoubleToString(BreakEvenProfit,2)
+                                          +",Max:"+DoubleToString(MaxNoBreakEven,2)+"]"
+                                          +" p:$"+DoubleToString(profit_distance,digits)
+                                          +" s:$"+DoubleToString(steps,digits)
+                                          +" sd:"+DoubleToString(stop_distance,digits)
+                                          +" sp:"+DoubleToString(stop_price,digits));
+                                   }
+                                 if(!OrderModify(OrderTicket(),OrderOpenPrice(),stop_price,OrderTakeProfit(),0,clrGold))
+                                   {
+                                    Print("Failed to modify break even. Order " + IntegerToString(OrderTicket()) + ", error: " + IntegerToString(GetLastError()));
+                                   }
+                                }
+                             }
+                          }
+                       }
+                     break;
+                    }
+                  case InPips:
+                    {
+                     double profit_distance = SymbolInfoDouble(OrderSymbol(),SYMBOL_BID) - OrderOpenPrice();
+                     bool is_activated = profit_distance > BreakEvenTrigger*pip;
+                     if(is_activated)
+                       {
+                        double steps = MathFloor(profit_distance / BreakEvenTrigger*pip);
+                        if(steps>0)
+                          {
+                           //--- check current step count is within limit
+                           if(steps <= MaxNoBreakEven)
+                             {
+                              double stop_distance = BreakEvenProfit*pip*steps;
+                              double stop_price = NormalizeDouble(OrderOpenPrice()+stop_distance,digits);
+                              //--- move stop if needed
+                              if((OrderStopLoss()==0)||(stop_price > OrderStopLoss()))
+                                {
+                                 if(DebugBreakEven)
+                                   {
+                                    Print("BE[Trigger:"+DoubleToString(BreakEvenTrigger)
+                                          +",Profit:"+DoubleToString(BreakEvenProfit)
+                                          +",Max:"+IntegerToString(MaxNoBreakEven)+"]"
+                                          +" p:"+DoubleToString(profit_distance,digits)
+                                          +" s:"+DoubleToString(steps)
+                                          +" sd:"+DoubleToString(stop_distance,digits)
+                                          +" sp:"+DoubleToString(stop_price,digits));
+                                   }
+                                 if(!OrderModify(OrderTicket(),OrderOpenPrice(),stop_price,OrderTakeProfit(),0,clrGold))
+                                   {
+                                    Print("Failed to modify break even. Order " + IntegerToString(OrderTicket()) + ", error: " + IntegerToString(GetLastError()));
+                                   }
+                                }
+                             }
+                          }
+                       }
+                     break;
+                    }
+                 }
+               break;
+              }
+            case ORDER_TYPE_SELL:
+              {
+               switch(BreakEvenUnit)
+                 {
+                  default:
+                  case InDollars:
+                    {
+                     double profit_distance = OrderProfit();
+                     bool is_activated = profit_distance > BreakEvenTrigger;
+                     if(is_activated)
+                       {
+                        double steps = MathFloor(profit_distance / BreakEvenTrigger);
+                        if(steps>0)
+                          {
+                           //--- check current step count is within limit
+                           if(steps <= MaxNoBreakEven)
+                             {
+                              //--- calculate stop loss distance
+                              double stop_distance = GetDistanceInPoints(OrderSymbol(),BreakEvenUnit,BreakEvenProfit*steps,1,OrderLots());
+                              double stop_price    = NormalizeDouble(OrderOpenPrice()-stop_distance,digits);
+                              //--- move stop if needed
+                              if((OrderStopLoss()==0)||(stop_price < OrderStopLoss()))
+                                {
+                                 if(DebugBreakEven)
+                                   {
+                                    Print("BE[Trigger:$"+DoubleToString(BreakEvenTrigger,2)
+                                          +",Profit:$"+DoubleToString(BreakEvenProfit,2)
+                                          +",Max:"+IntegerToString(MaxNoBreakEven)+"]"
+                                          +" p:$"+DoubleToString(profit_distance,digits)
+                                          +" s:$"+DoubleToString(steps,digits)
+                                          +" sd:"+DoubleToString(stop_distance,digits)
+                                          +" sp:"+DoubleToString(stop_price,digits));
+                                   }
+                                 if(!OrderModify(OrderTicket(),OrderOpenPrice(),stop_price,OrderTakeProfit(),0,clrGold))
+                                   {
+                                    Print("Failed to modify break even. Order " + IntegerToString(OrderTicket()) + ", error: " + IntegerToString(GetLastError()));
+                                   }
+                                }
+                             }
+                          }
+                       }
+                     break;
+                    }
+                  case InPips:
+                    {
+                     double profit_distance = OrderOpenPrice() - SymbolInfoDouble(OrderSymbol(),SYMBOL_ASK);
+                     bool is_activated = profit_distance > BreakEvenTrigger*pip;
+                     if(is_activated)
+                       {
+                        double steps = MathFloor(profit_distance / BreakEvenTrigger*pip);
+                        if(steps>0)
+                          {
+                           //--- check current step count is within limit
+                           if(steps <= MaxNoBreakEven)
+                             {
+                              double stop_distance = BreakEvenProfit*pip*steps;
+                              double stop_price    = NormalizeDouble(OrderOpenPrice()-stop_distance,digits);
+                              //--- move stop if needed
+                              if((OrderStopLoss()==0)||(stop_price < OrderStopLoss()))
+                                {
+                                 if(DebugBreakEven)
+                                   {
+                                    Print("BE[Trigger:"+DoubleToString(BreakEvenTrigger)
+                                          +",Profit:"+DoubleToString(BreakEvenProfit)
+                                          +",Max:"+IntegerToString(MaxNoBreakEven)+"]"
+                                          +" p:"+DoubleToString(profit_distance,digits)
+                                          +" s:"+DoubleToString(steps)
+                                          +" sd:"+DoubleToString(stop_distance,digits)
+                                          +" sp:"+DoubleToString(stop_price,digits));
+                                   }
+                                 if(!OrderModify(OrderTicket(),OrderOpenPrice(),stop_price,OrderTakeProfit(),0,clrGold))
+                                   {
+                                    Print("Failed to modify break even. Order " + IntegerToString(OrderTicket()) + ", error: " + IntegerToString(GetLastError()));
+                                   }
+                                }
+                             }
+                          }
+                       }
+                     break;
+                    }
+                 }
+               break;
+              }
+           }
+
+        }
+      count--;
+     }
+  }
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void CheckPartialClose()
+  {
+   int count=OrdersTotal();
+   double ts=0;
+   while(count>0)
+     {
+      int os=OrderSelect(count-1,MODE_TRADES);
+
+      if(OrderMagicNumber()==magic_Number)
+        {
+         //--- symbol variables
+         double pip=SymbolInfoDouble(OrderSymbol(),SYMBOL_POINT);
+         if(SymbolInfoInteger(OrderSymbol(),SYMBOL_DIGITS)==5 || SymbolInfoInteger(OrderSymbol(),SYMBOL_DIGITS)==3)
+            pip*=10;
+         int digits = (int)SymbolInfoInteger(OrderSymbol(),SYMBOL_DIGITS);
+
+         switch(OrderType())
+           {
+            default:
+               break;
+            case ORDER_TYPE_BUY:
+              {
+               switch(PartialCloseUnit)
+                 {
+                  default:
+                  case InDollars:
+                    {
+                     double profit_distance = OrderProfit();
+                     bool is_activated = profit_distance > PartialCloseTrigger;
+                     if(is_activated)
+                       {
+                        double steps = MathFloor(profit_distance / PartialCloseTrigger);
+                        if(steps>0)
+                          {
+                           //--- check current step count is within limit
+                           if(steps <= MaxNoPartialClose)
+                             {
+                              //--- calculate new lot size
+                              int lot_digits = (int)(MathLog(SymbolInfoDouble(OrderSymbol(),SYMBOL_VOLUME_STEP))/MathLog(0.1));
+                              double lots = NormalizeDouble(OrderLots() * PartialClosePercent,lot_digits);
+                              if(lots < SymbolInfoDouble(OrderSymbol(),SYMBOL_VOLUME_MIN))    //--- close all
+                                {
+                                 lots = OrderLots();
+                                }
+                              if(OrderClose(OrderTicket(),lots,SymbolInfoDouble(OrderSymbol(),SYMBOL_BID),5,clrYellow))
+                                {
+                                 if(DebugPartialClose)
+                                   {
+                                    Print("PC[Trigger:$"+DoubleToString(PartialCloseTrigger,2)
+                                          +",Percent:"+DoubleToString(PartialClosePercent,2)
+                                          +",Max:"+IntegerToString(MaxNoPartialClose)+"]"
+                                          +" p:$"+DoubleToString(profit_distance,digits)
+                                          +" s:"+DoubleToString(steps,digits)
+                                          +" l:"+DoubleToString(lots,lot_digits));
+                                   }
+                                }
+                              else
+                                {
+                                 Print("Failed to partial close. Order " + IntegerToString(OrderTicket()) + ", error: " + IntegerToString(GetLastError()));
+                                }
+                             }
+                          }
+                       }
+                     break;
+                    }
+                  case InPips:
+                    {
+                     double profit_distance = SymbolInfoDouble(OrderSymbol(),SYMBOL_BID) - OrderOpenPrice();
+                     bool is_activated = profit_distance > PartialCloseTrigger*pip;
+                     if(is_activated)
+                       {
+                        double steps = MathFloor(profit_distance / PartialCloseTrigger*pip);
+                        if(steps>0)
+                          {
+                           //--- check current step count is within limit
+                           if(steps <= MaxNoPartialClose)
+                             {
+                              //--- calculate new lot size
+                              int lot_digits = (int)(MathLog(SymbolInfoDouble(OrderSymbol(),SYMBOL_VOLUME_STEP))/MathLog(0.1));
+                              double lots = NormalizeDouble(OrderLots() * PartialClosePercent,lot_digits);
+                              if(lots < SymbolInfoDouble(OrderSymbol(),SYMBOL_VOLUME_MIN))    //--- close all
+                                {
+                                 lots = OrderLots();
+                                }
+                              if(OrderClose(OrderTicket(),lots,SymbolInfoDouble(OrderSymbol(),SYMBOL_BID),5,clrYellow))
+                                {
+                                 if(DebugPartialClose)
+                                   {
+                                    Print("PC[Trigger:"+DoubleToString(PartialCloseTrigger,2)
+                                          +",Percent:"+DoubleToString(PartialClosePercent,2)
+                                          +",Max:"+IntegerToString(MaxNoPartialClose)+"]"
+                                          +" p:"+DoubleToString(profit_distance,digits)
+                                          +" s:"+DoubleToString(steps,digits)
+                                          +" l:"+DoubleToString(lots,lot_digits));
+                                   }
+                                }
+                              else
+                                {
+                                 Print("Failed to partial close. Order " + IntegerToString(OrderTicket()) + ", error: " + IntegerToString(GetLastError()));
+                                }
+                             }
+                          }
+                       }
+                     break;
+                    }
+                 }
+               break;
+              }
+            case ORDER_TYPE_SELL:
+              {
+               switch(PartialCloseUnit)
+                 {
+                  default:
+                  case InDollars:
+                    {
+                     double profit_distance = OrderProfit();
+                     bool is_activated = profit_distance > PartialCloseTrigger;
+                     if(is_activated)
+                       {
+                        double steps = MathFloor(profit_distance / PartialCloseTrigger);
+                        if(steps>0)
+                          {
+                           //--- check current step count is within limit
+                           if(steps <= MaxNoPartialClose)
+                             {
+                              //--- calculate new lot size
+                              int lot_digits = (int)(MathLog(SymbolInfoDouble(OrderSymbol(),SYMBOL_VOLUME_STEP))/MathLog(0.1));
+                              double lots = NormalizeDouble(OrderLots() * PartialClosePercent,lot_digits);
+                              if(lots < SymbolInfoDouble(OrderSymbol(),SYMBOL_VOLUME_MIN))    //--- close all
+                                {
+                                 lots = OrderLots();
+                                }
+                              if(OrderClose(OrderTicket(),lots,SymbolInfoDouble(OrderSymbol(),SYMBOL_ASK),5,clrYellow))
+                                {
+                                 if(DebugPartialClose)
+                                   {
+                                    Print("PC[Trigger:$"+DoubleToString(PartialCloseTrigger,2)
+                                          +",Percent:"+DoubleToString(PartialClosePercent,2)
+                                          +",Max:"+IntegerToString(MaxNoPartialClose)+"]"
+                                          +" p:$"+DoubleToString(profit_distance,digits)
+                                          +" s:"+DoubleToString(steps,digits)
+                                          +" l:"+DoubleToString(lots,lot_digits));
+                                   }
+                                }
+                              else
+                                {
+                                 Print("Failed to partial close. Order " + IntegerToString(OrderTicket()) + ", error: " + IntegerToString(GetLastError()));
+                                }
+                             }
+                          }
+                       }
+                     break;
+                    }
+                  case InPips:
+                    {
+                     double profit_distance = OrderOpenPrice() - SymbolInfoDouble(OrderSymbol(),SYMBOL_ASK);
+                     bool is_activated = profit_distance > PartialCloseTrigger*pip;
+                     if(is_activated)
+                       {
+                        double steps = MathFloor(profit_distance / PartialCloseTrigger*pip);
+                        if(steps>0)
+                          {
+                           //--- check current step count is within limit
+                           if(steps <= MaxNoPartialClose)
+                             {
+                              //--- calculate new lot size
+                              int lot_digits = (int)(MathLog(SymbolInfoDouble(OrderSymbol(),SYMBOL_VOLUME_STEP))/MathLog(0.1));
+                              double lots = NormalizeDouble(OrderLots() * PartialClosePercent,lot_digits);
+                              if(lots < SymbolInfoDouble(OrderSymbol(),SYMBOL_VOLUME_MIN))    //--- close all
+                                {
+                                 lots = OrderLots();
+                                }
+                              if(OrderClose(OrderTicket(),lots,SymbolInfoDouble(OrderSymbol(),SYMBOL_ASK),5,clrYellow))
+                                {
+                                 if(DebugPartialClose)
+                                   {
+                                    Print("PC[Trigger:"+DoubleToString(PartialCloseTrigger,2)
+                                          +",Percent:"+DoubleToString(PartialClosePercent,2)
+                                          +",Max:"+IntegerToString(MaxNoPartialClose)+"]"
+                                          +" p:"+DoubleToString(profit_distance,digits)
+                                          +" s:"+DoubleToString(steps,digits)
+                                          +" l:"+DoubleToString(lots,lot_digits));
+                                   }
+                                }
+                              else
+                                {
+                                 Print("Failed to partial close. Order " + IntegerToString(OrderTicket()) + ", error: " + IntegerToString(GetLastError()));
+                                }
+                             }
+                          }
+                       }
+                     break;
+                    }
+                 }
+               break;
+              }
+           }
+
+        }
+      count--;
+     }
+  }
+//+------------------------------------------------------------------+
+double GetDistanceInPoints(const string symbol,ENUM_UNIT unit,double value,double pip_value,double volume)
+  {
+   switch(unit)
+     {
+      default:
+         PrintFormat("Unhandled unit %s, returning -1",EnumToString(unit));
+         break;
+      case InPips:
+        {
+         double distance = value;
+
+         if(IsTesting()&&DebugUnit)
+            PrintFormat("%s:%.2f dist: %.5f",EnumToString(unit),value,distance);
+
+         return value;
+        }
+      case InDollars:
+        {
+         double tickSize        = SymbolInfoDouble(symbol,SYMBOL_TRADE_TICK_SIZE);
+         double tickValue       = SymbolInfoDouble(symbol,SYMBOL_TRADE_TICK_VALUE);
+         double dVpL            = tickValue / tickSize;
+         double distance        = (value /(volume * dVpL))/pip_value;
+
+         if(IsTesting()&&DebugUnit)
+            PrintFormat("%s:%s:%.2f dist: %.5f volume:%.2f dVpL:%.5f pip:%.5f",symbol,EnumToString(unit),value,distance,volume,dVpL,pip_value);
+
+         return distance;
+        }
+     }
+   return -1;
+  }
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+
+//+-------------------------------------------------------------------------------------------+
+//| Download XML file from forexfactory                                                       |
+//| for windows 7 and later file path would be:                                               |
+//| C:\Users\xxx\AppData\Roaming\MetaQuotes\Terminal\xxxxxxxxxxxxxxx\MQL4\Files\xmlFileName   |
+//+-------------------------------------------------------------------------------------------+
+void xmlDownload()
+  {
+//---
+   ResetLastError();
+   string sUrl="https://nfs.faireconomy.media/ff_calendar_thisweek.xml";
+   string FilePath=StringConcatenate(TerminalInfoString(TERMINAL_DATA_PATH),"\\MQL4\\files\\",xmlFileName);
+   int FileGet=URLDownloadToFileW(NULL,sUrl,FilePath,0,NULL);
+   if(FileGet==0)
+      PrintFormat(INAME+": %s file downloaded successfully!",xmlFileName);
+//--- check for errors
+   else
+      PrintFormat(INAME+": failed to download %s file, Error code = %d",xmlFileName,GetLastError());
+//---
+  }
+//+------------------------------------------------------------------+
+//| Read the XML file                                                |
+//+------------------------------------------------------------------+
+void xmlRead()
+  {
+//---
+   ResetLastError();
+   int FileHandle=FileOpen(xmlFileName,FILE_BIN|FILE_READ);
+   if(FileHandle!=INVALID_HANDLE)
+     {
+      //--- receive the file size
+      ulong size=FileSize(FileHandle);
+      //--- read data from the file
+      while(!FileIsEnding(FileHandle))
+         sData=FileReadString(FileHandle,(int)size);
+      //--- close
+      FileClose(FileHandle);
+     }
+//--- check for errors
+   else
+      PrintFormat(INAME+": failed to open %s file, Error code = %d",xmlFileName,GetLastError());
+//---
+  }
+//+------------------------------------------------------------------+
+//| Check for update XML                                             |
+//+------------------------------------------------------------------+
+void xmlUpdate()
+  {
+//--- do not download on saturday
+   if(TimeDayOfWeek(Midnight)==6)
+      return;
+   else
+     {
+      Print(INAME+": check for updates...");
+      Print(INAME+": delete old file");
+      FileDelete(xmlFileName);
+      xmlDownload();
+      xmlRead();
+      xmlModifed=(datetime)FileGetInteger(xmlFileName,FILE_MODIFY_DATE,false);
+      PrintFormat(INAME+": updated successfully! last modified: %s",(string)xmlModifed);
+     }
+//---
+  }
+//+------------------------------------------------------------------+
+//| Draw panel and events on the chart                               |
+//+------------------------------------------------------------------+
+void DrawEvents()
+  {
+   string FontName = "Arial";
+   int    FontSize = 8;
+   string eToolTip = "";
+//--- draw backbround / date / special note
+   if(ShowPanel && ShowPanelBG)
+     {
+      eToolTip="Hover on the Event!";
+      Draw("BG","gggg",85,"Webdings",Pbgc,Corner,x0,3,eToolTip);
+      Draw("Date",DayToStr(Midnight)+", "+MonthToStr()+" "+(string)TimeDay(Midnight),FontSize+1,"Arial Black",TitleColor,Corner,x2,95,"Today");
+      Draw("Title",PanelTitle,FontSize,FontName,TitleColor,Corner,x1,95,"Panel Title");
+      Draw("Spreator","------",10,"Arial",RemarksColor,Corner,x2,83,eToolTip);
+     }
+//--- draw objects / alert functions
+   for(int i=0; i<5; i++)
+     {
+      eToolTip=eTitle[i]+"\nCurrency: "+eCountry[i]+"\nTime left: "+(string)eMinutes[i]+" Minutes"+"\nImpact: "+eImpact[i];
+      //--- impact color
+      color EventColor=ImpactToColor(eImpact[i]);
+      //--- previous/forecast color
+      color ForecastColor=PreviousColor;
+      if(ePrevious[i]>eForecast[i])
+         ForecastColor=NegativeColor;
+      else
+         if(ePrevious[i]<eForecast[i])
+            ForecastColor=PositiveColor;
+      //--- past event color
+      if(eMinutes[i]<0)
+         EventColor=ForecastColor=PreviousColor=RemarksColor;
+      //--- panel
+      if(ShowPanel)
+        {
+         //--- date/time / title / currency
+         Draw("Event "+(string)i,
+              DayToStr(eTime[i])+"  |  "+
+              TimeToStr(eTime[i],TIME_MINUTES)+"  |  "+
+              eCountry[i]+"  |  "+
+              eTitle[i],FontSize,FontName,EventColor,Corner,x2,70-i*15,eToolTip);
+         //--- forecast
+         Draw("Event Forecast "+(string)i,"[ "+eForecast[i]+" ]",FontSize,FontName,ForecastColor,Corner,xf,70-i*15,
+              "Forecast: "+eForecast[i]);
+         //--- previous
+         Draw("Event Previous "+(string)i,"[ "+ePrevious[i]+" ]",FontSize,FontName,PreviousColor,Corner,xp,70-i*15,
+              "Previous: "+ePrevious[i]);
+        }
+      //--- vertical news
+      if(ShowVerticalNews)
+         DrawLine("Event Line "+(string)i,eTime[i]+(ChartTimeOffset*3600),EventColor,eToolTip);
+      //--- Set alert message
+      if(eImpact[i]=="High")
+        {
+         string AlertMessage=(string)eMinutes[i]+" Minutes until ["+eTitle[i]+"] Event on "+eCountry[i]+
+                             "\nImpact: "+eImpact[i]+
+                             "\nForecast: "+eForecast[i]+
+                             "\nPrevious: "+ePrevious[i];
+         //--- first alert
+         if(Alert1Minutes!=-1 && eMinutes[i]==Alert1Minutes && !FirstAlert)
+           {
+            setAlerts("First Alert! "+AlertMessage);
+            FirstAlert=true;
+           }
+         //--- second alert
+         if(Alert2Minutes!=-1 && eMinutes[i]==Alert2Minutes && !SecondAlert)
+           {
+            setAlerts("Second Alert! "+AlertMessage);
+            SecondAlert=true;
+           }
+        }
+      //--- break if no more data
+      if(eTitle[i]==eTitle[i+1])
+        {
+         Draw(INAME+" no more events","NO MORE EVENTS",8,"Arial",RemarksColor,Corner,x2,50-i*15,"Get some rest!");
+         break;
+        }
+     }
+//---
+  }
+//+-----------------------------------------------------------------------------------------------+
+//| Subroutine: to ID currency even if broker has added a prefix to the symbol, and is used to    |
+//| determine the news to show, based on the users external inputs - by authors (Modified)        |
+//+-----------------------------------------------------------------------------------------------+
+bool IsCurrency(string symbol)
+  {
+//---
+   if(ReportForUSD && symbol == "USD")
+      return(true);
+   else
+      if(ReportForGBP && symbol == "GBP")
+         return(true);
+      else
+         if(ReportForEUR && symbol == "EUR")
+            return(true);
+         else
+            if(ReportForCAD && symbol == "CAD")
+               return(true);
+            else
+               if(ReportForAUD && symbol == "AUD")
+                  return(true);
+               else
+                  if(ReportForCHF && symbol == "CHF")
+                     return(true);
+                  else
+                     if(ReportForJPY && symbol == "JPY")
+                        return(true);
+                     else
+                        if(ReportForNZD && symbol == "NZD")
+                           return(true);
+                        else
+                           if(ReportForCNY && symbol == "CNY")
+                              return(true);
+   return(false);
+//---
+  }
+//+------------------------------------------------------------------+
+//| Converts ff time & date into yyyy.mm.dd hh:mm - by deVries       |
+//+------------------------------------------------------------------+
+string MakeDateTime(string strDate,string strTime)
+  {
+//---
+   int n1stDash=StringFind(strDate, "-");
+   int n2ndDash=StringFind(strDate, "-", n1stDash+1);
+
+   string strMonth=StringSubstr(strDate,0,2);
+   string strDay=StringSubstr(strDate,3,2);
+   string strYear=StringSubstr(strDate,6,4);
+
+   int nTimeColonPos=StringFind(strTime,":");
+   string strHour=StringSubstr(strTime,0,nTimeColonPos);
+   string strMinute=StringSubstr(strTime,nTimeColonPos+1,2);
+   string strAM_PM=StringSubstr(strTime,StringLen(strTime)-2);
+
+   int nHour24=StrToInteger(strHour);
+   if((strAM_PM=="pm" || strAM_PM=="PM") && nHour24!=12)
+      nHour24+=12;
+   if((strAM_PM=="am" || strAM_PM=="AM") && nHour24==12)
+      nHour24=0;
+   string strHourPad="";
+   if(nHour24<10)
+      strHourPad="0";
+   return(StringConcatenate(strYear, ".", strMonth, ".", strDay, " ", strHourPad, nHour24, ":", strMinute));
+//---
+  }
+//+------------------------------------------------------------------+
+//| set impact Color - by authors                                    |
+//+------------------------------------------------------------------+
+color ImpactToColor(string impact)
+  {
+//---
+   if(impact == "High")
+      return (HighImpactColor);
+   else
+      if(impact == "Medium")
+         return (MediumImpactColor);
+      else
+         if(impact == "Low")
+            return (LowImpactColor);
+         else
+            if(impact == "Holiday")
+               return (HolidayColor);
+            else
+               return (RemarksColor);
+//---
+  }
+//+------------------------------------------------------------------+
+//| Impact to number - by authors                                    |
+//+------------------------------------------------------------------+
+int ImpactToNumber(string impact)
+  {
+//---
+   if(impact == "High")
+      return(3);
+   else
+      if(impact == "Medium")
+         return(2);
+      else
+         if(impact == "Low")
+            return(1);
+         else
+            return(0);
+//---
+  }
+//+------------------------------------------------------------------+
+//| Convert day of the week to text                                  |
+//+------------------------------------------------------------------+
+string DayToStr(datetime time)
+  {
+   int ThisDay=TimeDayOfWeek(time);
+   string day="";
+   switch(ThisDay)
+     {
+      case 0:
+         day="Sun";
+         break;
+      case 1:
+         day="Mon";
+         break;
+      case 2:
+         day="Tue";
+         break;
+      case 3:
+         day="Wed";
+         break;
+      case 4:
+         day="Thu";
+         break;
+      case 5:
+         day="Fri";
+         break;
+      case 6:
+         day="Sat";
+         break;
+     }
+   return(day);
+  }
+//+------------------------------------------------------------------+
+//| Convert months to text                                           |
+//+------------------------------------------------------------------+
+string MonthToStr()
+  {
+   int ThisMonth=Month();
+   string month="";
+   switch(ThisMonth)
+     {
+      case 1:
+         month="Jan";
+         break;
+      case 2:
+         month="Feb";
+         break;
+      case 3:
+         month="Mar";
+         break;
+      case 4:
+         month="Apr";
+         break;
+      case 5:
+         month="May";
+         break;
+      case 6:
+         month="Jun";
+         break;
+      case 7:
+         month="Jul";
+         break;
+      case 8:
+         month="Aug";
+         break;
+      case 9:
+         month="Sep";
+         break;
+      case 10:
+         month="Oct";
+         break;
+      case 11:
+         month="Nov";
+         break;
+      case 12:
+         month="Dec";
+         break;
+     }
+   return(month);
+  }
+//+------------------------------------------------------------------+
+//| Candle Time Left / Spread                                        |
+//+------------------------------------------------------------------+
+void SymbolInfo()
+  {
+//---
+   string TimeLeft=TimeToStr(Time[0]+Period()*60-TimeCurrent(),TIME_MINUTES|TIME_SECONDS);
+   string Spread=DoubleToStr(MarketInfo(Symbol(),MODE_SPREAD)/Factor,1);
+   double DayClose=iClose(NULL,PERIOD_D1,1);
+   if(DayClose!=0)
+     {
+      double Strength=((Bid-DayClose)/DayClose)*100;
+      string Label=DoubleToStr(Strength,2)+"%"+" / "+Spread+" / "+TimeLeft;
+      ENUM_BASE_CORNER corner=1;
+      if(Corner==1)
+         corner=3;
+      string arrow="q";
+      if(Strength>0)
+         arrow="p";
+      string tooltip="Strength / Spread / Candle Time";
+      Draw(INAME+": info",Label,InfoFontSize,"Calibri",InfoColor,corner,120,20,tooltip);
+      Draw(INAME+": info arrow",arrow,InfoFontSize-2,"Wingdings 3",InfoColor,corner,130,18,tooltip);
+     }
+//---
+  }
+//+------------------------------------------------------------------+
+//| draw event text                                                  |
+//+------------------------------------------------------------------+
+void Draw(string name,string label,int size,string font,color clr,ENUM_BASE_CORNER c,int x,int y,string tooltip)
+  {
+//---
+   name=INAME+": "+name;
+   int windows=0;
+   if(AllowSubwindow && WindowsTotal()>1)
+      windows=1;
+   ObjectDelete(name);
+   ObjectCreate(name,OBJ_LABEL,windows,0,0);
+   ObjectSetText(name,label,size,font,clr);
+   ObjectSet(name,OBJPROP_CORNER,c);
+   ObjectSet(name,OBJPROP_XDISTANCE,x);
+   ObjectSet(name,OBJPROP_YDISTANCE,y);
+//--- justify text
+   ObjectSet(name,OBJPROP_ANCHOR,anchor);
+   ObjectSetString(0,name,OBJPROP_TOOLTIP,tooltip);
+   ObjectSet(name,OBJPROP_SELECTABLE,0);
+//---
+  }
+//+------------------------------------------------------------------+
+//| draw vertical lines                                              |
+//+------------------------------------------------------------------+
+void DrawLine(string name,datetime time,color clr,string tooltip)
+  {
+//---
+   name=INAME+": "+name;
+   ObjectDelete(name);
+   ObjectCreate(name,OBJ_VLINE,0,time,0);
+   ObjectSet(name,OBJPROP_COLOR,clr);
+   ObjectSet(name,OBJPROP_STYLE,2);
+   ObjectSet(name,OBJPROP_WIDTH,0);
+   ObjectSetString(0,name,OBJPROP_TOOLTIP,tooltip);
+//---
+  }
+//+------------------------------------------------------------------+
+//| Notifications                                                    |
+//+------------------------------------------------------------------+
+void setAlerts(string message)
+  {
+//---
+   if(PopupAlerts)
+      Alert(message);
+   if(SoundAlerts)
+      PlaySound(AlertSoundFile);
+   if(NotificationAlerts)
+      SendNotification(message);
+   if(EmailAlerts)
+      SendMail(INAME,message);
+   if(sendnews)
+     {
+      cc0=message;
+     }
+//---
+  }
+//+--------------------------- END ----------------------------------+
+
+//+------------------------------------------------------------------+
+
+//+------------------------------------------------------------------+
+
 //+------------------------------------------------------------------+
