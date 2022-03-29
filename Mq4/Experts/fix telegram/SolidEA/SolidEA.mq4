@@ -302,7 +302,9 @@ input ENUM_TIMEFRAMES         timeframe2x = PERIOD_M30; // Entry Time Frame_1
 
 input string                  h2 = "============Money Management========";
 input double                  Lots = 0.05; //First Lots
+input int                     No_Trades_per_signal=3;
 input double                  SubLots = 0.03; //Sub Lots
+input double                  Multi_tp_Distance=30; //Distance beetween tp 
 input double                  Risk = 10; // Risk Percent
 input bool                    MM = false; // Use Optimal Lot Size
 input string h4 = "=============TP and SL ===============";
@@ -323,7 +325,6 @@ input bool BarBaru = false; //Open New Bar Indicator
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-input int orderexp = 3; //Pending order Experation (inBars)
 input profittype Profit_Type= InDollarsProfit;
 input double ProfitValue = 30.0; //Maximum Profit in %
 input losstype LossType = InDollarsLoss; // Loss Type
@@ -428,7 +429,7 @@ input string   lb_1              = "";                   // ------> PANEL SETTIN
 extern bool    ShowPanel         = true;                 // Show panel
 bool            AllowSubwindow    = false;                // Show Panel in sub window
 extern ENUM_BASE_CORNER Corner   = 2;                    // Panel side
-extern string  PanelTitle="Forex Calendar @ Forex Factory"; // Panel title
+extern string  PanelTitle="Forex Calendar @ Yousuf Mesalm"; // Panel title
 extern color   TitleColor        = C'46,188,46';         // Title color
 extern bool    ShowPanelBG       = true;                 // Show panel backgroud
 extern color   Pbgc              = C'25,25,25';          // Panel backgroud color
@@ -653,12 +654,13 @@ public:
   };
 CMyBot bot;
 int getme_result;
-
+double added_lot=0;
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
 int OnInit()
   {
+    added_lot=SubLots-Lots;
 //--- check for DLL
    if(!TerminalInfoInteger(TERMINAL_DLLS_ALLOWED))
      {
@@ -2370,30 +2372,50 @@ void Buy(int i, string Cmnt, indi i1,ENUM_TIMEFRAMES tf1=0,indi i2=0,ENUM_TIMEFR
   {
 
    double volume = CalcLot(Symbols[i]);
+   double lasttp = TakeProfit;
    string s1=Get_Indicator(i1)+" "+Get_Timeframe(tf1)+" ";
    string s2=i2==0?"":Get_Indicator(i2)+" "+Get_Timeframe(tf2)+" ";
    string s3=i3==0?"":Get_Indicator(i3)+" "+Get_Timeframe(tf3)+" ";
    string s4=i4==0?"":Get_Indicator(i4)+" "+Get_Timeframe(tf4)+" ";
-
+  int n=0;
+  if(No_Trades_per_signal==0)
+      n=1;
+  else
+      if(No_Trades_per_signal>0){
+        n=No_Trades_per_signal;
+      }
+  
 // =====================================Buy =====================================
    if(Execution_Mode == instan)
      {
+       for(int x=0;x<n;x++){
+         volume=x==0?volume:volume+added_lot;
+         lasttp =x==0?TakeProfit:lasttp+Multi_tp_Distance;
       if(usemode==Auto&&!MaxBuyExceed)
-         trades[i].Position(TYPE_POSITION_BUY, volume, StopLoss, TakeProfit, SLTP_PIPS, 30, Cmnt);
+         trades[i].Position(TYPE_POSITION_BUY, volume, StopLoss, lasttp, SLTP_PIPS, 30, Cmnt);
+       }
       cc0=Get_Strategy(0)+", "+Symbols[i]+", Buy, " +s1+s2+s3+s4+" @ "+(string)tools[i].Ask()+" Time: "+ TimeToString(TimeCurrent(),TIME_MINUTES)+" Date: "+ TimeToString(TimeCurrent(),TIME_DATE);
      }
    if(Execution_Mode == limit&&!MaxBuyExceed)
      {
+for(int x=0;x<n;x++){
+         volume=x==0?volume:volume+added_lot;
+lasttp =x==0?TakeProfit:lasttp+Multi_tp_Distance;
       double openPrice = tools[i].Bid()-orderdistance*tools[i].Pip();
       if(usemode==Auto)
-         trades[i].Order(TYPE_ORDER_BUYLIMIT, volume, openPrice, StopLoss, TakeProfit, SLTP_PIPS, 0, 30, Cmnt);
+         trades[i].Order(TYPE_ORDER_BUYLIMIT, volume, openPrice, StopLoss, lasttp, SLTP_PIPS, 0, 30, Cmnt);
+      }
       cc0=Get_Strategy(0)+", "+Symbols[i]+", BuyLimit, "+s1+s2+s3+s4+" @ "+(string)openPrice+" Time: "+ TimeToString(TimeCurrent(),TIME_MINUTES)+" Date: "+ TimeToString(TimeCurrent(),TIME_DATE);
      }
    if(Execution_Mode == stop&&!MaxBuyExceed)
      {
+for(int x=0;x<n;x++){
+         volume=x==0?volume:volume+added_lot;
+lasttp =x==0?TakeProfit:lasttp+Multi_tp_Distance;
       double openPrice = tools[i].Ask()+orderdistance*tools[i].Pip();
       if(usemode==Auto)
-         trades[i].Order(TYPE_ORDER_BUYSTOP, volume, openPrice, StopLoss, TakeProfit, SLTP_PIPS, 0, 30, Cmnt);
+         trades[i].Order(TYPE_ORDER_BUYSTOP, volume, openPrice, StopLoss, lasttp, SLTP_PIPS, 0, 30, Cmnt);
+      }
       cc0=Get_Strategy(0)+", "+Symbols[i]+", BuyStop, "+s1+s2+s3+s4+" @ "+(string)openPrice+" Time: "+ TimeToString(TimeCurrent(),TIME_MINUTES)+" Date: "+ TimeToString(TimeCurrent(),TIME_DATE);
      }
 
@@ -2407,30 +2429,51 @@ void Buy(int i, string Cmnt, indi i1,ENUM_TIMEFRAMES tf1=0,indi i2=0,ENUM_TIMEFR
 void Sell(int i, string Cmnt, indi i1,ENUM_TIMEFRAMES tf1=0,indi i2=0,ENUM_TIMEFRAMES tf2=0, indi i3=0,ENUM_TIMEFRAMES tf3=0, indi i4=0,ENUM_TIMEFRAMES tf4=0)
   {
    double volume = CalcLot(Symbols[i]);
+ double lasttp = TakeProfit;
    string s1=Get_Indicator(i1)+" "+Get_Timeframe(tf1)+" ";
    string s2=i2==0?"":Get_Indicator(i2)+" "+Get_Timeframe(tf2)+" ";
    string s3=i3==0?"":Get_Indicator(i3)+" "+Get_Timeframe(tf3)+" ";
    string s4=i4==0?"":Get_Indicator(i4)+" "+Get_Timeframe(tf4)+" ";
+int n=0;
+  if(No_Trades_per_signal==0)
+      n=1;
+  else
+      if(No_Trades_per_signal>0){
+        n=No_Trades_per_signal;
+      }
+      
    if(Execution_Mode == instan)
      {
+for(int x=0;x<n;x++){
+         volume=x==0?volume:volume+added_lot;
+lasttp =x==0?TakeProfit:lasttp+Multi_tp_Distance;
       if(usemode==Auto&&!MaxSellExceed)
-         trades[i].Position(TYPE_POSITION_SELL, volume, StopLoss, TakeProfit, SLTP_PIPS, 30, Cmnt);
+         trades[i].Position(TYPE_POSITION_SELL, volume, StopLoss, lasttp, SLTP_PIPS, 30, Cmnt);
+      }
       cc0=Get_Strategy(0)+", "+Symbols[i]+", Sell, "+s1+s2+s3+s4+" @ "+(string)tools[i].Bid()+" Time: "+ TimeToString(TimeCurrent(),TIME_MINUTES)+" Date: "+ TimeToString(TimeCurrent(),TIME_DATE);
 
      }
    if(Execution_Mode == limit&&!MaxSellExceed)
      {
+for(int x=0;x<n;x++){
+         volume=x==0?volume:volume+added_lot;
+lasttp =x==0?TakeProfit:lasttp+Multi_tp_Distance;
       double openPrice = tools[i].Ask()+orderdistance*tools[i].Pip();
       if(usemode==Auto)
-         trades[i].Order(TYPE_ORDER_SELLLIMIT, volume, openPrice, StopLoss, TakeProfit, SLTP_PIPS, 0, 30, Cmnt);
+         trades[i].Order(TYPE_ORDER_SELLLIMIT, volume, openPrice, StopLoss, lasttp, SLTP_PIPS, 0, 30, Cmnt);
+      }
       cc0=Get_Strategy(0)+", "+Symbols[i]+" ,SellLimit, "+s1+s2+s3+s4+" @ "+(string)openPrice+" Time: "+ TimeToString(TimeCurrent(),TIME_MINUTES)+" Date: "+ TimeToString(TimeCurrent(),TIME_DATE);
 
      }
    if(Execution_Mode == stop&&!MaxSellExceed)
      {
+for(int x=0;x<n;x++){
+         volume=x==0?volume:volume+added_lot;
+lasttp =x==0?TakeProfit:lasttp+Multi_tp_Distance;
       double openPrice = tools[i].Bid()-orderdistance*tools[i].Pip();
       if(usemode==Auto)
-         trades[i].Order(TYPE_ORDER_SELLSTOP, volume, openPrice, StopLoss, TakeProfit, SLTP_PIPS, 0, 30, Cmnt);
+         trades[i].Order(TYPE_ORDER_SELLSTOP, volume, openPrice, StopLoss, lasttp, SLTP_PIPS, 0, 30, Cmnt);
+      }
       cc0=Get_Strategy(0)+", "+Symbols[i]+", SellStop, "+s1+s2+s3+s4+" @ "+(string)openPrice+" Time: "+ TimeToString(TimeCurrent(),TIME_MINUTES)+" Date: "+ TimeToString(TimeCurrent(),TIME_DATE);
 
      }
